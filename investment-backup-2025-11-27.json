@@ -1,0 +1,28 @@
+{
+  "funds": [
+    {
+      "id": "1764279606249",
+      "name": "AZM",
+      "code": "33",
+      "price": 1.42905,
+      "subscriptionFee": 0,
+      "redemptionFee": 2,
+      "transactions": [
+        {
+          "date": "2025-11-22",
+          "type": "buy",
+          "units": 361,
+          "price": 1.40905
+        }
+      ],
+      "priceHistory": [
+        {
+          "date": "2025-11-27",
+          "price": 1.42905
+        }
+      ]
+    }
+  ],
+  "exportDate": "2025-11-27T21:46:43.042Z",
+  "version": "1.0"
+}

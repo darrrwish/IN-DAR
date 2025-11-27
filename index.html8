@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام تتبع الاستثمارات</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-theme="light" data-lang="ar">
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1><i class="fas fa-chart-line"></i> <span data-ar="نظام تتبع الاستثمارات" data-en="Investment Tracker">نظام تتبع الاستثمارات</span></h1>
+                    <p id="current-fund-display">--</p>
+                </div>
+                <div class="header-controls">
+                    <select id="fund-select"></select>
+                    <button class="btn-icon secondary" onclick="app.toggleTheme()" title="تبديل المظهر">
+                        <i class="fas fa-moon" id="theme-icon"></i>
+                    </button>
+                    <button class="btn-icon secondary" onclick="app.toggleLanguage()" title="تبديل اللغة">
+                        <i class="fas fa-language"></i>
+                    </button>
+                    <button class="btn-icon" onclick="app.showAddFundModal()" title="إضافة صندوق جديد">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs-container">
+            <button class="tab-btn active" onclick="app.switchTab('dashboard')">
+                <i class="fas fa-chart-pie"></i>
+                <span data-ar="لوحة التحكم" data-en="Dashboard">لوحة التحكم</span>
+            </button>
+            <button class="tab-btn" onclick="app.switchTab('transactions')">
+                <i class="fas fa-exchange-alt"></i>
+                <span data-ar="المعاملات" data-en="Transactions">المعاملات</span>
+            </button>
+            <button class="tab-btn" onclick="app.switchTab('funds')">
+                <i class="fas fa-list"></i>
+                <span data-ar="الصناديق" data-en="Funds">الصناديق</span>
+            </button>
+            <button class="tab-btn" onclick="app.switchTab('prices')">
+                <i class="fas fa-tag"></i>
+                <span data-ar="إدارة الأسعار" data-en="Price Management">إدارة الأسعار</span>
+            </button>
+            <button class="tab-btn" onclick="app.switchTab('export')">
+                <i class="fas fa-download"></i>
+                <span data-ar="التصدير" data-en="Export">التصدير</span>
+            </button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="content active">
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-wallet"></i>
+                    <span data-ar="ملخص المحفظة" data-en="Portfolio Summary">ملخص المحفظة</span>
+                </div>
+                <div class="grid-4">
+                    <div class="metric-box">
+                        <div class="metric-label"><i class="fas fa-cubes"></i> <span data-ar="إجمالي الوثائق" data-en="Total Units">إجمالي الوثائق</span></div>
+                        <div class="metric-value" id="total-units">0</div>
+                    </div>
+                    <div class="metric-box secondary">
+                        <div class="metric-label"><i class="fas fa-coins"></i> <span data-ar="متوسط الشراء" data-en="Avg Buy">متوسط الشراء</span></div>
+                        <div class="metric-value" id="avg-price">0.00</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label"><i class="fas fa-tag"></i> <span data-ar="السعر الحالي" data-en="Current Price">السعر الحالي</span></div>
+                        <div class="metric-value" id="current-price">0.00</div>
+                    </div>
+                    <div class="metric-box" id="value-box">
+                        <div class="metric-label"><i class="fas fa-dollar-sign"></i> <span data-ar="القيمة الحالية" data-en="Current Value">القيمة الحالية</span></div>
+                        <div class="metric-value" id="current-value">0.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-chart-bar"></i> <span data-ar="أداء المحفظة" data-en="Performance">أداء المحفظة</span></div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>
+                            <div style="font-size: 11px; color: #999; margin-bottom: 4px;"><i class="fas fa-arrow-up"></i> <span data-ar="إجمالي الاستثمار" data-en="Total Invested">إجمالي الاستثمار</span></div>
+                            <div style="font-size: 18px; font-weight: 700; color: var(--primary);" id="total-invested">0.00</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 11px; color: #999; margin-bottom: 4px;"><i class="fas fa-trophy"></i> <span data-ar="الربح/الخسارة" data-en="Profit/Loss">الربح/الخسارة</span></div>
+                            <div style="font-size: 18px; font-weight: 700;" id="net-profit">0.00</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 11px; color: #999; margin-bottom: 4px;"><i class="fas fa-percent"></i> <span data-ar="العائد %" data-en="Return %">العائد %</span></div>
+                            <div style="font-size: 18px; font-weight: 700;" id="return-pct">0.00%</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 11px; color: #999; margin-bottom: 4px;"><i class="fas fa-clock"></i> <span data-ar="آخر تحديث" data-en="Last Update">آخر تحديث</span></div>
+                            <div style="font-size: 13px; font-weight: 600;" id="last-update">--</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-lightbulb"></i> <span data-ar="التوصية" data-en="Recommendation">التوصية</span></div>
+                    <div id="recommendation" class="badge neutral" style="width: 100%; justify-content: center; padding: 15px;"><i class="fas fa-info-circle"></i> <span data-ar="احسب البيانات" data-en="Calculate Data">احسب البيانات</span></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fas fa-history"></i> <span data-ar="تاريخ الأسعار" data-en="Price History">تاريخ الأسعار</span></div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-calendar"></i> <span data-ar="التاريخ" data-en="Date">التاريخ</span></th>
+                                <th><i class="fas fa-tag"></i> <span data-ar="السعر" data-en="Price">السعر</span></th>
+                                <th><i class="fas fa-arrow-up-down"></i> <span data-ar="التغير %" data-en="Change %">التغير %</span></th>
+                                <th><i class="fas fa-chart-line"></i> <span data-ar="الحالة" data-en="Status">الحالة</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="price-history-table"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transactions Tab -->
+        <div id="transactions" class="content">
+            <div class="card">
+                <div class="card-title"><i class="fas fa-plus-circle"></i> <span data-ar="إضافة معاملة" data-en="Add Transaction">إضافة معاملة</span></div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label data-ar="التاريخ" data-en="Date">التاريخ</label>
+                        <input type="date" id="tx-date">
+                    </div>
+                    <div class="form-group">
+                        <label data-ar="النوع" data-en="Type">النوع</label>
+                        <select id="tx-type">
+                            <option value="buy" data-ar="شراء" data-en="Buy">شراء</option>
+                            <option value="sell" data-ar="بيع" data-en="Sell">بيع</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-ar="عدد الوثائق" data-en="Units">عدد الوثائق</label>
+                        <input type="number" id="tx-units" placeholder="0" step="1">
+                    </div>
+                    <div class="form-group">
+                        <label data-ar="سعر الوثيقة" data-en="Price">سعر الوثيقة</label>
+                        <input type="number" id="tx-price" placeholder="0.00" step="0.01">
+                    </div>
+                </div>
+                <div class="button-row">
+                    <button class="btn-icon success" onclick="app.addTransaction()"><i class="fas fa-check"></i> <span data-ar="إضافة" data-en="Add">إضافة</span></button>
+                    <button class="btn-icon" onclick="app.clearTxForm()"><i class="fas fa-redo"></i> <span data-ar="مسح" data-en="Clear">مسح</span></button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fas fa-list"></i> <span data-ar="سجل المعاملات" data-en="Transactions Log">سجل المعاملات</span></div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-calendar"></i> <span data-ar="التاريخ" data-en="Date">التاريخ</span></th>
+                                <th><i class="fas fa-exchange-alt"></i> <span data-ar="النوع" data-en="Type">النوع</span></th>
+                                <th><i class="fas fa-cubes"></i> <span data-ar="الوثائق" data-en="Units">الوثائق</span></th>
+                                <th><i class="fas fa-tag"></i> <span data-ar="السعر" data-en="Price">السعر</span></th>
+                                <th><i class="fas fa-money-bill"></i> <span data-ar="المبلغ" data-en="Amount">المبلغ</span></th>
+                                <th><i class="fas fa-percent"></i> <span data-ar="الرسوم" data-en="Fees">الرسوم</span></th>
+                                <th><i class="fas fa-trash"></i> <span data-ar="حذف" data-en="Delete">حذف</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactions-table"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Funds Tab -->
+        <div id="funds" class="content">
+            <div class="card">
+                <div class="card-title"><i class="fas fa-list"></i> <span data-ar="قائمة الصناديق" data-en="Funds List">قائمة الصناديق</span></div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-info"></i> <span data-ar="الاسم" data-en="Name">الاسم</span></th>
+                                <th><i class="fas fa-code"></i> <span data-ar="الكود" data-en="Code">الكود</span></th>
+                                <th><i class="fas fa-tag"></i> <span data-ar="السعر" data-en="Price">السعر</span></th>
+                                <th><i class="fas fa-exchange-alt"></i> <span data-ar="رسوم" data-en="Fees">رسوم</span></th>
+                                <th><i class="fas fa-trash"></i> <span data-ar="حذف" data-en="Delete">حذف</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="funds-table"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prices Tab -->
+        <div id="prices" class="content">
+            <div class="card">
+                <div class="card-title"><i class="fas fa-calendar-alt"></i> <span data-ar="تاريخ اليوم" data-en="Today">تاريخ اليوم</span>: <span id="today-date" style="color: var(--primary); font-weight: 700;">--</span></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fas fa-edit"></i> <span data-ar="تحديث سعر الوثيقة" data-en="Update Price">تحديث سعر الوثيقة</span></div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label data-ar="اسم الصندوق" data-en="Fund Name">اسم الصندوق</label>
+                        <input type="text" id="price-fund-name" readonly style="background: #f0f0f0; cursor: not-allowed;">
+                    </div>
+                    <div class="form-group">
+                        <label data-ar="السعر الجديد" data-en="New Price">السعر الجديد</label>
+                        <input type="number" id="price-new" placeholder="0.00" step="0.01">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label data-ar="التاريخ" data-en="Date">التاريخ</label>
+                    <input type="date" id="price-date">
+                </div>
+                <div class="button-row">
+                    <button class="btn-icon success" onclick="app.updatePrice()"><i class="fas fa-check"></i> <span data-ar="تحديث" data-en="Update">تحديث</span></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Tab -->
+        <div id="export" class="content">
+            <div class="card">
+                <div class="card-title"><i class="fas fa-download"></i> <span data-ar="تصدير البيانات" data-en="Export Data">تصدير البيانات</span></div>
+                <div class="button-row">
+                    <button class="btn-icon" onclick="app.exportJSON()"><i class="fas fa-database"></i> <span data-ar="JSON" data-en="JSON">JSON</span></button>
+                    <button class="btn-icon" onclick="app.exportCSV()"><i class="fas fa-file-csv"></i> <span data-ar="CSV" data-en="CSV">CSV</span></button>
+                    <button class="btn-icon" onclick="app.exportExcel()"><i class="fas fa-file-excel"></i> <span data-ar="Excel" data-en="Excel">Excel</span></button>
+                    <button class="btn-icon" onclick="app.exportPDF()"><i class="fas fa-file-pdf"></i> <span data-ar="PDF" data-en="PDF">PDF</span></button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fas fa-upload"></i> <span data-ar="استيراد البيانات" data-en="Import Data">استيراد البيانات</span></div>
+                <div class="form-group">
+                    <label data-ar="اختر ملف" data-en="Choose File">اختر ملف</label>
+                    <input type="file" id="import-file" accept=".json,.csv,.xlsx">
+                </div>
+                <div class="button-row">
+                    <button class="btn-icon success" onclick="app.importFile()"><i class="fas fa-check"></i> <span data-ar="استيراد" data-en="Import">استيراد</span></button>
+                    <button class="btn-icon danger" onclick="app.clearAllData()"><i class="fas fa-trash"></i> <span data-ar="مسح الكل" data-en="Clear All">مسح الكل</span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Fund Modal -->
+    <div id="fundModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-plus-circle"></i> <span data-ar="إضافة صندوق جديد" data-en="Add New Fund">إضافة صندوق جديد</span></h2>
+                <button class="modal-close" onclick="app.closeFundModal()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label data-ar="اسم الصندوق" data-en="Fund Name">اسم الصندوق</label>
+                <input type="text" id="fund-name" placeholder="">
+            </div>
+            <div class="form-group">
+                <label data-ar="كود الصندوق" data-en="Fund Code">كود الصندوق</label>
+                <input type="text" id="fund-code" placeholder="">
+            </div>
+            <div class="form-group">
+                <label data-ar="السعر الحالي" data-en="Current Price">السعر الحالي</label>
+                <input type="number" id="fund-price" placeholder="0.00" step="0.01">
+            </div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label data-ar="رسوم الاكتتاب % (شراء)" data-en="Subscription Fee % (Buy)">رسوم الاكتتاب % (شراء)</label>
+                    <input type="number" id="fund-sub-fee" placeholder="0.00" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label data-ar="رسوم الاسترداد % (بيع)" data-en="Redemption Fee % (Sell)">رسوم الاسترداد % (بيع)</label>
+                    <input type="number" id="fund-red-fee" placeholder="0.00" step="0.01" value="0">
+                </div>
+            </div>
+            <div class="button-row">
+                <button class="btn-icon success" onclick="app.addFund()"><i class="fas fa-check"></i> <span data-ar="إضافة" data-en="Add">إضافة</span></button>
+                <button class="btn-icon danger" onclick="app.closeFundModal()"><i class="fas fa-times"></i> <span data-ar="إلغاء" data-en="Cancel">إلغاء</span></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/papaparse/5.4.1/papaparse.min.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/export.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
