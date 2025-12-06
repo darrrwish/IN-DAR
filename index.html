@@ -6,6 +6,9 @@
     <title>InDar Tracker</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -13,68 +16,62 @@
             box-sizing: border-box;
         }
 
-        .sidebar {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .nav-item.top-section {
-            margin-top: 0;
-        }
-
-        .nav-item.theme-btn {
-            margin-top: auto;
-            order: 1;
-        }
-
-        .nav-item.lang-btn {
-            order: 2;
-        }
-
-        .nav-item.add-btn {
-            order: 3;
-        }
-
         :root {
-            /* ألوان جديدة - Light Mode */
-            --primary: #000B58;
-            --primary-light: #003161;
-            --primary-dark: #000830;
-            --accent: #b9a6ff;
-            --secondary: #006A67;
-            --secondary-light: #007B7A;
-            --secondary-dark: #005956;
-            --tertiary: #00509E;
+            /* الألوان الجديدة المطلوبة */
+            --color-primary-900: #434E78; /* الأزرق الداكن */
+            --color-primary-700: #607B8F; /* الأزرق المتوسط */
+            --color-accent-400: #F7E396; /* البيج الفاتح */
+            --color-accent-600: #E97F4A; /* البرتقالي */
+            --color-accent-300: #FFB480; /* البرتقالي الفاتح */
+            --color-accent-200: #FFD8B8; /* البرتقالي الفاتح جداً */
+            
+            /* نظام الألوان المحدث */
+            --primary: var(--color-primary-900);
+            --primary-light: var(--color-primary-700);
+            --primary-dark: #2B3658;
+            --accent: var(--color-accent-400);
+            --secondary: var(--color-accent-600);
+            --secondary-light: var(--color-accent-300);
+            --secondary-dark: #D96C3A;
+            --tertiary: var(--color-primary-700);
             --background: #FFFFFF;
-            --surface: #F5F7FA;
+            --surface: #F8F9FA;
             --on-background: #1A1A1A;
             --on-surface: #333333;
             --border: #E0E0E0;
-            --success: #006A67;
-            --danger: #D32F2F;
-            --warning: #F57C00;
-            --info: #00509E;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #fd7e14;
+            --info: #17a2b8;
+            --chart-line: var(--color-primary-900);
+            --chart-area: rgba(67, 78, 120, 0.1);
+            --chart-point: var(--color-accent-600);
+            --chart-grid: rgba(0, 0, 0, 0.1);
         }
 
         /* Dark Mode */
         body[data-theme="dark"] {
-            --primary: #3A6BFF;
-            --primary-light: #5A85FF;
-            --primary-dark: #1A4BD6;
-            --accent: #150b3a;
-            --secondary: #00B3AD;
-            --secondary-light: #00CCC6;
-            --secondary-dark: #009A94;
-            --tertiary: #4A7FFF;
-            --background: #0A0A1A;
-            --surface: #14142E;
-            --on-background: #E6E6FF;
-            --on-surface: #D0D0FF;
-            --border: #303050;
-            --success: #00B3AD;
-            --danger: #FF5252;
-            --warning: #FFB74D;
-            --info: #4A7FFF;
+            --primary: var(--color-primary-700);
+            --primary-light: #7A8BB3;
+            --primary-dark: var(--color-primary-900);
+            --accent: #FFE8B0;
+            --secondary: #FF9966;
+            --secondary-light: #FFB480;
+            --secondary-dark: var(--color-accent-600);
+            --tertiary: #8DA1B5;
+            --background: #121212;
+            --surface: #1E1E1E;
+            --on-background: #E6E6E6;
+            --on-surface: #D0D0D0;
+            --border: #404040;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #fd7e14;
+            --info: #17a2b8;
+            --chart-line: var(--color-primary-700);
+            --chart-area: rgba(96, 123, 143, 0.2);
+            --chart-point: var(--color-accent-300);
+            --chart-grid: rgba(255, 255, 255, 0.1);
         }
 
         html {
@@ -88,11 +85,6 @@
             color: var(--on-background);
             transition: all 0.4s ease;
             line-height: 1.6;
-        }
-
-        body[data-theme="dark"] {
-            background: var(--background);
-            color: var(--on-background);
         }
 
         /* Sidebar Navigation - Icons Only */
@@ -123,7 +115,7 @@
             justify-content: center;
             margin-bottom: 10px;
             border-radius: 10px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--tertiary) 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
             font-size: 24px;
         }
@@ -152,7 +144,7 @@
         .nav-item.active {
             background: var(--primary);
             color: white;
-            box-shadow: 0 4px 12px rgba(0, 11, 88, 0.3);
+            box-shadow: 0 4px 12px rgba(67, 78, 120, 0.3);
         }
 
         .nav-separator {
@@ -162,15 +154,6 @@
             margin: 10px 0;
         }
 
-        body[data-theme="dark"] .nav-separator {
-            background: var(--border);
-        }
-
-        .nav-item.top-section {
-            margin-top: auto;
-        }
-
-        /* Main Content */
         .main-content {
             margin-right: 70px;
             flex: 1;
@@ -189,10 +172,6 @@
             z-index: 100;
         }
 
-        body[data-theme="dark"] .header {
-            background: var(--surface);
-        }
-
         .header-content {
             display: flex;
             justify-content: space-between;
@@ -208,10 +187,6 @@
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-
-        body[data-theme="dark"] .header-left h1 {
-            color: var(--primary-light);
         }
 
         .header-left p {
@@ -237,12 +212,6 @@
             background: var(--surface);
             color: var(--on-surface);
             cursor: pointer;
-        }
-
-        body[data-theme="dark"] .fund-selector {
-            background: var(--surface);
-            color: var(--on-surface);
-            border-color: var(--primary);
         }
 
         /* Content Area */
@@ -277,10 +246,6 @@
             border: 1px solid var(--border);
         }
 
-        body[data-theme="dark"] .card {
-            background: var(--surface);
-        }
-
         .card-title {
             font-size: 16px;
             font-weight: 600;
@@ -289,10 +254,6 @@
             display: flex;
             align-items: center;
             gap: 8px;
-        }
-
-        body[data-theme="dark"] .card-title {
-            color: var(--primary-light);
         }
 
         /* Grid */
@@ -320,11 +281,6 @@
             .grid-2 { grid-template-columns: 1fr; }
         }
 
-        @media (max-width: 1024px) {
-            .header-controls { gap: 8px; flex-wrap: wrap; }
-            .fund-selector { min-width: 160px; }
-        }
-
         @media (max-width: 768px) {
             .sidebar { width: 60px; }
             .nav-item { width: 45px; height: 45px; font-size: 18px; }
@@ -338,49 +294,6 @@
             .fund-selector { min-width: 120px; font-size: 11px; }
             .card { padding: 14px; margin-bottom: 12px; }
             .card-title { font-size: 14px; }
-            .metric-box { padding: 12px; }
-            .metric-label { font-size: 11px; }
-            .metric-value { font-size: 20px; }
-            .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-            table { min-width: 800px; font-size: 11px; }
-        }
-
-        @media (max-width: 480px) {
-            .sidebar { width: 55px; padding: 10px 0; }
-            .nav-item { width: 40px; height: 40px; font-size: 16px; margin: 4px 0; }
-            .nav-logo { width: 40px; height: 40px; font-size: 18px; margin-bottom: 5px; }
-            .main-content { margin-right: 55px; }
-            .content-wrapper { padding: 8px; }
-            .header { padding: 8px 12px; }
-            .header-left h1 { font-size: 16px; gap: 6px; }
-            .header-left p { font-size: 11px; }
-            .header-controls { gap: 4px; }
-            .fund-selector { min-width: 100px; font-size: 10px; padding: 8px 10px; }
-            .card { padding: 10px; margin-bottom: 10px; }
-            .card-title { font-size: 13px; margin-bottom: 10px; }
-            .btn { padding: 8px 12px; font-size: 12px; }
-            .btn-group { gap: 6px; }
-            .metric-box { padding: 10px; }
-            .metric-label { font-size: 10px; margin-bottom: 3px; }
-            .metric-value { font-size: 18px; }
-            .recommendation-box { padding: 10px 12px; }
-            .recommendation-action { font-size: 14px; margin-bottom: 4px; }
-            table { font-size: 10px; min-width: 700px; }
-            th, td { padding: 8px; }
-            .form-group label { font-size: 12px; }
-            .form-group input, .form-group select { padding: 8px 10px; font-size: 13px; }
-            .modal-content { padding: 16px; }
-            .chart-container { height: 250px; }
-        }
-
-        /* تثبيت اتجاه الجداول */
-        .table-responsive table {
-            direction: rtl;
-        }
-        
-        th, td {
-            text-align: right !important;
-            white-space: nowrap;
         }
 
         /* Metric Box */
@@ -406,73 +319,6 @@
             word-break: break-word;
         }
 
-        /* Recommendation Box */
-        .recommendation-box {
-            background: linear-gradient(135deg, var(--accent) 20%, #006a6740 100%);
-            color: var(--on-background);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            /* box-shadow: 0 4px 12px rgba(253, 235, 158, 0.2); */
-            border: 2px solid var(--accent);
-        }
-
-        body[data-theme="dark"] .recommendation-box {
-            background: linear-gradient(135deg, var(--accent) 20%, #2a1919 100%);
-            color: var(--on-surface);
-        }
-
-        .recommendation-action {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--primary);
-        }
-
-        .recommendation-strategy {
-            font-size: 14px;
-            margin: 15px 0;
-            line-height: 1.6;
-            color: var(--on-surface);
-        }
-
-        .recommendation-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            flex-wrap: wrap;
-        }
-
-        .recommendation-actions .btn {
-            font-size: 12px;
-            padding: 8px 15px;
-            background: var(--primary);
-            color: white;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-        }
-
-        .recommendation-confidence {
-            font-size: 12px;
-            opacity: 0.75;
-            margin-top: 15px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            color: var(--on-surface);
-        }
-
-        /* Chart Container */
-        .chart-container {
-            position: relative;
-            height: 320px;
-            margin-bottom: 16px;
-        }
-
         /* Table */
         .table-responsive {
             overflow-x: auto;
@@ -483,11 +329,6 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
 
-        body[data-theme="dark"] .table-responsive {
-            background: var(--surface);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        }
-
         table {
             width: 100%;
             min-width: 100%;
@@ -495,6 +336,8 @@
             table-layout: auto;
             font-size: 13.5px;
             background: transparent;
+                direction: rtl !important;
+
         }
 
         th, td {
@@ -523,14 +366,22 @@
         }
 
         tr:hover td {
-            background-color: rgba(0, 11, 88, 0.05);
+            background-color: rgba(67, 78, 120, 0.05);
         }
 
-        body[data-theme="dark"] tr:hover td {
-            background-color: rgba(58, 107, 255, 0.1);
-        }
+        /* الحفاظ على اتجاه RTL بغض النظر عن اللغة */
+[data-lang="ar"] table,
+[data-lang="en"] table {
+    direction: rtl !important;
+}
 
-        /* Table colors */
+[data-lang="ar"] th,
+[data-lang="ar"] td,
+[data-lang="en"] th,
+[data-lang="en"] td {
+    text-align: right !important;
+}
+
         .positive {
             color: var(--success);
             font-weight: 600;
@@ -595,11 +446,6 @@
             color: white;
         }
 
-        .btn.accent {
-            background: var(--accent);
-            color: var(--primary-dark);
-        }
-
         .btn.danger {
             background: var(--danger);
             color: white;
@@ -608,27 +454,6 @@
         .btn.success {
             background: var(--success);
             color: white;
-        }
-
-        .btn.warning {
-            background: var(--warning);
-            color: white;
-        }
-
-        .btn.info {
-            background: var(--info);
-            color: white;
-        }
-
-        .btn.small {
-            padding: 6px 10px;
-            font-size: 11px;
-        }
-
-        .btn-group {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 10px;
         }
 
         /* Modal */
@@ -659,44 +484,24 @@
             overflow-y: auto;
         }
 
-        /* Holding period badge */
-        .holding-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            background: rgba(0, 11, 88, 0.1);
-            color: var(--primary);
-            padding: 4px 8px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 500;
-        }
-
-        /* Auto update section */
-        .auto-update-section {
-            background: rgba(0, 80, 158, 0.1);
-            border: 1px solid var(--info);
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 20px;
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 320px;
+            margin-bottom: 16px;
         }
 
         /* Auto Update Form */
         .auto-update-form {
-            background: linear-gradient(135deg, var(--accent) 10%, #ff3a3a47 100%);
-            border: 2px solid var(--accent);
+            background: rgba(233, 127, 74, 0.1);
+            border: 2px solid var(--secondary);
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 20px;
         }
 
-        .auto-update-form .card-title {
-            color: var(--primary-dark);
-            font-size: 18px;
-        }
-
         .auto-update-info {
-            background: rgba(253, 235, 158, 0.1);
+            background: rgba(247, 227, 150, 0.1);
             border: 1px solid var(--accent);
             border-radius: 8px;
             padding: 12px;
@@ -715,32 +520,15 @@
         }
 
         .auto-update-status.success {
-            background: rgba(0, 106, 103, 0.1);
+            background: rgba(40, 167, 69, 0.1);
             color: var(--success);
             border: 1px solid var(--success);
         }
 
         .auto-update-status.error {
-            background: rgba(211, 47, 47, 0.1);
+            background: rgba(220, 53, 69, 0.1);
             color: var(--danger);
             border: 1px solid var(--danger);
-        }
-
-        @media print {
-            .sidebar, .header { display: none !important; }
-            .main-content { margin-right: 0; }
-        }
-
-        /* Action buttons in table */
-        .action-buttons {
-            display: flex;
-            gap: 5px;
-        }
-
-        .action-btn {
-            padding: 4px 8px;
-            font-size: 11px;
-            border-radius: 4px;
         }
 
         /* Badge */
@@ -755,76 +543,85 @@
         }
 
         .badge.buy {
-            background: rgba(0, 106, 103, 0.1);
+            background: rgba(40, 167, 69, 0.1);
             color: var(--success);
         }
 
         .badge.sell {
-            background: rgba(211, 47, 47, 0.1);
+            background: rgba(220, 53, 69, 0.1);
             color: var(--danger);
         }
 
-        /* تحسين عرض الأرقام بدون تقريب */
+        /* أرقام بدون تقريب */
         .exact-number {
             font-family: 'Courier New', monospace;
             font-weight: 500;
         }
 
-        /* إخفاء العناصر المحذوفة */
-        .hidden-element {
-            display: none !important;
+        /* إخفاء الأسهم في selects */
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23607B8F' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: left 12px center;
+            background-size: 16px;
+            padding-left: 36px;
+            padding-right: 12px;
+        }
+
+        body[data-theme="dark"] select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23F7E396' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
         }
     </style>
 </head>
 <body data-theme="light" data-lang="ar">
     
-  <!-- Sidebar Navigation - Icons Only -->
-<div class="sidebar">
-    <!-- Logo -->
-    <div class="nav-logo" title="InDar Tracker">
-        <i class="fas fa-chart-line"></i>
-    </div>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="nav-logo" title="InDar Tracker">
+            <i class="fas fa-chart-line"></i>
+        </div>
 
-    <!-- Main Navigation -->
-    <div class="nav-items">
-        <div class="nav-item active" onclick="switchTab('dashboard')" title="Dashboard">
-            <i class="fas fa-chart-pie"></i>
+        <div class="nav-items">
+            <div class="nav-item active" onclick="switchTab('dashboard')" title="Dashboard">
+                <i class="fas fa-chart-pie"></i>
+            </div>
+            <div class="nav-item" onclick="switchTab('transactions')" title="Transactions">
+                <i class="fas fa-exchange-alt"></i>
+            </div>
+            <div class="nav-item" onclick="switchTab('funds')" title="Funds">
+                <i class="fas fa-list"></i>
+            </div>
+            <div class="nav-item" onclick="switchTab('prices')" title="Prices">
+                <i class="fas fa-database"></i>
+            </div>
+            <div class="nav-item" onclick="switchTab('analytics')" title="Analytics">
+                <i class="fas fa-chart-bar"></i>
+            </div>
+            <div class="nav-item" onclick="switchTab('general-info')" title="General Info">
+                <i class="fas fa-info-circle"></i>
+            </div>
+            <div class="nav-item" onclick="switchTab('export')" title="Export">
+                <i class="fas fa-download"></i>
+            </div>
         </div>
-        <div class="nav-item" onclick="switchTab('transactions')" title="Transactions">
-            <i class="fas fa-exchange-alt"></i>
-        </div>
-        <div class="nav-item" onclick="switchTab('funds')" title="Funds">
-            <i class="fas fa-list"></i>
-        </div>
-        <div class="nav-item" onclick="switchTab('prices')" title="Prices">
-            <i class="fas fa-database"></i>
-        </div>
-        <div class="nav-item" onclick="switchTab('analytics')" title="Analytics">
-            <i class="fas fa-chart-bar"></i>
-        </div>
-        <div class="nav-item" onclick="switchTab('general-info')" title="General Info">
-            <i class="fas fa-info-circle"></i>
-        </div>
-        <div class="nav-item" onclick="switchTab('export')" title="Export">
-            <i class="fas fa-download"></i>
-        </div>
-    </div>
 
-    <div class="nav-separator"></div>
+        <div class="nav-separator"></div>
 
-    <!-- Top Section -->
-    <div class="nav-items bottom-section">
-        <div class="nav-item" onclick="toggleTheme()" title="Toggle Theme">
-            <i class="fas fa-moon" id="theme-icon"></i>
-        </div>
-        <div class="nav-item" onclick="toggleLanguage()" title="Toggle Language">
-            <i class="fas fa-globe"></i>
-        </div>
-        <div class="nav-item" onclick="showFundModal()" title="Add Fund">
-            <i class="fas fa-plus"></i>
+        <div class="nav-items bottom-section">
+            <div class="nav-item" onclick="toggleTheme()" title="Toggle Theme">
+                <i class="fas fa-moon" id="theme-icon"></i>
+            </div>
+            <div class="nav-item" onclick="toggleLanguage()" title="Toggle Language">
+                <i class="fas fa-globe"></i>
+            </div>
+            <div class="nav-item" onclick="showFundModal()" title="Add Fund">
+                <i class="fas fa-plus"></i>
+            </div>
         </div>
     </div>
-</div>
 
     <!-- Main Content -->
     <div class="main-content">
@@ -853,34 +650,20 @@
                     <div class="grid-4">
                         <div class="metric-box">
                             <div class="metric-label"><i class="fas fa-cubes"></i> <span data-ar="إجمالي الوثائق" data-en="Total Units">إجمالي الوثائق</span></div>
-                            <div class="metric-value exact-number" id="total-units">0</div>
+                            <div class="metric-value" id="total-units">0</div>
                         </div>
                         <div class="metric-box" style="background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%);">
                             <div class="metric-label"><i class="fas fa-coins"></i> <span data-ar="متوسط الشراء" data-en="Avg Buy">متوسط الشراء</span></div>
                             <div class="metric-value exact-number" id="avg-price">0</div>
                         </div>
-                        <div class="metric-box" style="background: linear-gradient(135deg, var(--info) 0%, #0066CC 100%);">
+                        <div class="metric-box" style="background: linear-gradient(135deg, var(--tertiary) 0%, var(--color-primary-900) 100%);">
                             <div class="metric-label"><i class="fas fa-tag"></i> <span data-ar="السعر الحالي" data-en="Current Price">السعر الحالي</span></div>
                             <div class="metric-value exact-number" id="current-price">0</div>
                         </div>
                         <div class="metric-box" id="value-box">
                             <div class="metric-label"><i class="fas fa-dollar-sign"></i> <span data-ar="القيمة الحالية" data-en="Current Value">القيمة الحالية</span></div>
-                            <div class="metric-value exact-number" id="current-value">0</div>
+                            <div class="metric-value" id="current-value">0</div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Recommendation Box -->
-                <div id="recommendation-box" class="recommendation-box">
-                    <div class="recommendation-action">
-                        <i class="fas fa-lightbulb"></i>
-                        <span id="recommendation-text">توصيات</span>
-                    </div>
-                    <div id="recommendation-strategy" class="recommendation-strategy"></div>
-                    <div id="recommendation-actions" class="recommendation-actions"></div>
-                    <div class="recommendation-confidence">
-                        <i class="fas fa-chart-line"></i>
-                        <span id="recommendation-confidence-text"></span>
                     </div>
                 </div>
 
@@ -889,19 +672,19 @@
                         <div class="card-title"><i class="fas fa-chart-area"></i> <span data-ar="أداء المحفظة" data-en="Performance">أداء المحفظة</span></div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                             <div>
-                                <div style="font-size: 11px; color: #999; margin-bottom: 4px;"><span data-ar="إجمالي الاستثمار" data-en="Total Invested">إجمالي الاستثمار</span></div>
-                                <div style="font-size: 18px; font-weight: 700; color: var(--primary);" class="exact-number" id="total-invested">0</div>
+                                <div style="font-size: 11px; color: var(--on-surface); opacity: 0.7; margin-bottom: 4px;"><span data-ar="إجمالي الاستثمار" data-en="Total Invested">إجمالي الاستثمار</span></div>
+                                <div style="font-size: 18px; font-weight: 700; color: var(--primary);" id="total-invested">0</div>
                             </div>
                             <div>
-                                <div style="font-size: 11px; color: #999; margin-bottom: 4px;"><span data-ar="الربح/الخسارة" data-en="Profit/Loss">الربح/الخسارة</span></div>
-                                <div style="font-size: 18px; font-weight: 700;" class="exact-number" id="net-profit">0</div>
+                                <div style="font-size: 11px; color: var(--on-surface); opacity: 0.7; margin-bottom: 4px;"><span data-ar="الربح/الخسارة" data-en="Profit/Loss">الربح/الخسارة</span></div>
+                                <div style="font-size: 18px; font-weight: 700;" id="net-profit">0</div>
                             </div>
                             <div>
-                                <div style="font-size: 11px; color: #999; margin-bottom: 4px;"><span data-ar="العائد %" data-en="Return %">العائد %</span></div>
+                                <div style="font-size: 11px; color: var(--on-surface); opacity: 0.7; margin-bottom: 4px;"><span data-ar="العائد %" data-en="Return %">العائد %</span></div>
                                 <div style="font-size: 18px; font-weight: 700;" id="return-pct">0%</div>
                             </div>
                             <div>
-                                <div style="font-size: 11px; color: #999; margin-bottom: 4px;"><span data-ar="آخر تحديث" data-en="Last Update">آخر تحديث</span></div>
+                                <div style="font-size: 11px; color: var(--on-surface); opacity: 0.7; margin-bottom: 4px;"><span data-ar="آخر تحديث" data-en="Last Update">آخر تحديث</span></div>
                                 <div style="font-size: 13px; font-weight: 600;" id="last-update">--</div>
                             </div>
                         </div>
@@ -909,11 +692,11 @@
 
                     <div class="card">
                         <div class="card-title"><i class="fas fa-database"></i> <span data-ar="قاعدة بيانات الأسعار" data-en="Prices Database">قاعدة بيانات الأسعار</span></div>
-                        <div style="font-size: 12px; color: #666; margin-bottom: 12px;">
+                        <div style="font-size: 12px; color: var(--on-surface); opacity: 0.7; margin-bottom: 12px;">
                             <span data-ar="عدد الأسعار المسجلة:" data-en="Prices recorded:">عدد الأسعار المسجلة:</span>
                             <strong id="prices-count">0</strong>
                         </div>
-                        <div class="btn-group">
+                        <div style="display: flex; gap: 10px;">
                             <button class="btn" onclick="exportPricesPDF()">
                                 <i class="fas fa-file-pdf"></i> <span data-ar="PDF" data-en="PDF">PDF</span>
                             </button>
@@ -963,14 +746,14 @@
                         </div>
                         <div class="form-group">
                             <label data-ar="عدد الوثائق" data-en="Units">عدد الوثائق</label>
-                            <input type="number" id="tx-units" placeholder="0" step="any">
+                            <input type="number" id="tx-units" placeholder="0" step="1">
                         </div>
                         <div class="form-group">
                             <label data-ar="سعر الوثيقة" data-en="Price">سعر الوثيقة</label>
-                            <input type="number" id="tx-price" placeholder="0" step="any">
+                            <input type="text" id="tx-price" placeholder="0" step="any">
                         </div>
                     </div>
-                    <div class="btn-group">
+                    <div style="display: flex; gap: 10px;">
                         <button class="btn" onclick="addTransaction()">
                             <i class="fas fa-check"></i> <span data-ar="إضافة" data-en="Add">إضافة</span>
                         </button>
@@ -987,13 +770,10 @@
                             <thead>
                                 <tr>
                                     <th><i class="fas fa-calendar"></i> <span data-ar="التاريخ" data-en="Date">التاريخ</span></th>
-                                    <th><i class="fas fa-clock"></i> <span data-ar="المدة" data-en="Duration">المدة</span></th>
                                     <th><i class="fas fa-exchange-alt"></i> <span data-ar="النوع" data-en="Type">النوع</span></th>
                                     <th><i class="fas fa-cubes"></i> <span data-ar="الوثائق" data-en="Units">الوثائق</span></th>
                                     <th><i class="fas fa-tag"></i> <span data-ar="السعر" data-en="Price">السعر</span></th>
                                     <th><i class="fas fa-money-bill"></i> <span data-ar="المبلغ" data-en="Amount">المبلغ</span></th>
-                                    <th><i class="fas fa-percent"></i> <span data-ar="الرسوم" data-en="Fees">الرسوم</span></th>
-                                    <th><i class="fas fa-check"></i> <span data-ar="صافي" data-en="Net">صافي</span></th>
                                     <th><i class="fas fa-cog"></i> <span data-ar="الإجراءات" data-en="Actions">الإجراءات</span></th>
                                 </tr>
                             </thead>
@@ -1014,7 +794,7 @@
                                     <th><i class="fas fa-info"></i> <span data-ar="الاسم" data-en="Name">الاسم</span></th>
                                     <th><i class="fas fa-code"></i> <span data-ar="الكود" data-en="Code">الكود</span></th>
                                     <th><i class="fas fa-tag"></i> <span data-ar="السعر" data-en="Price">السعر</span></th>
-                                    <th><i class="fas fa-exchange-alt"></i> <span data-ar="رسوم" data-en="Fees">رسوم</span></th>
+                                    <th><i class="fas fa-percent"></i> <span data-ar="رسوم" data-en="Fees">رسوم</span></th>
                                     <th><i class="fas fa-cog"></i> <span data-ar="الإجراءات" data-en="Actions">الإجراءات</span></th>
                                 </tr>
                             </thead>
@@ -1024,18 +804,25 @@
                 </div>
             </div>
 
-            <!-- Prices Tab (قاعدة بيانات الأسعار) -->
+            <!-- Prices Tab -->
             <div id="prices" class="content">
                 <div class="card">
                     <div class="card-title"><i class="fas fa-calendar-alt"></i> <span data-ar="تاريخ اليوم" data-en="Today">تاريخ اليوم</span>: <span id="today-date" style="color: var(--primary); font-weight: 700;">--</span></div>
                 </div>
 
-                <!-- Auto Update Form -->
+                <!-- Auto Update Form لكل صندوق -->
                 <div class="auto-update-form">
-                    <div class="card-title"><i class="fas fa-robot"></i> <span data-ar="التحديث التلقائي للأسعار" data-en="Auto Price Update">التحديث التلقائي للأسعار</span></div>
+                    <div class="card-title"><i class="fas fa-robot"></i> <span data-ar="التحديث التلقائي للأسعار لكل صندوق" data-en="Auto Price Update Per Fund">التحديث التلقائي للأسعار لكل صندوق</span></div>
                     
                     <div class="auto-update-info">
-                        <i class="fas fa-info-circle"></i> سيتم إضافة سعر جديد كل يوم تلقائياً باستخدام الإعدادات التالية:
+                        <i class="fas fa-info-circle"></i> <span data-ar="سيتم تحديث سعر كل صندوق من مصدر مختلف حسب الإعدادات الخاصة به" data-en="Each fund will be updated from different source based on its settings">سيتم تحديث سعر كل صندوق من مصدر مختلف حسب الإعدادات الخاصة به</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-filter"></i> <span data-ar="اختر الصندوق" data-en="Select Fund">اختر الصندوق</span></label>
+                        <select id="auto-update-fund-select">
+                            <option value="" data-ar="اختر صندوق" data-en="Select Fund">اختر صندوق</option>
+                        </select>
                     </div>
                     
                     <div class="grid-2">
@@ -1049,21 +836,31 @@
                         </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label><i class="fas fa-clock"></i> <span data-ar="وقت التحديث" data-en="Update Time">وقت التحديث</span></label>
-                        <select id="update-time">
-                            <option value="09:00">09:00 صباحاً</option>
-                            <option value="10:00">10:00 صباحاً</option>
-                            <option value="11:00">11:00 صباحاً</option>
-                            <option value="12:00">12:00 ظهراً</option>
-                            <option value="13:00">01:00 ظهراً</option>
-                            <option value="14:00">02:00 ظهراً</option>
-                        </select>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label><i class="fas fa-clock"></i> <span data-ar="وقت التحديث" data-en="Update Time">وقت التحديث</span></label>
+                            <select id="update-time">
+                                <option value="09:00">09:00 صباحاً</option>
+                                <option value="10:00">10:00 صباحاً</option>
+                                <option value="11:00">11:00 صباحاً</option>
+                                <option value="12:00">12:00 ظهراً</option>
+                                <option value="13:00">01:00 ظهراً</option>
+                                <option value="14:00">02:00 ظهراً</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-sync"></i> <span data-ar="التكرار" data-en="Frequency">التكرار</span></label>
+                            <select id="update-frequency">
+                                <option value="daily" data-ar="يومي" data-en="Daily">يومي</option>
+                                <option value="weekly" data-ar="أسبوعي" data-en="Weekly">أسبوعي</option>
+                                <option value="monthly" data-ar="شهري" data-en="Monthly">شهري</option>
+                            </select>
+                        </div>
                     </div>
                     
                     <div id="auto-update-status" class="auto-update-status" style="display: none;"></div>
                     
-                    <div class="btn-group">
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                         <button class="btn" onclick="saveAutoUpdateSettings()">
                             <i class="fas fa-save"></i> <span data-ar="حفظ الإعدادات" data-en="Save Settings">حفظ الإعدادات</span>
                         </button>
@@ -1071,7 +868,7 @@
                             <i class="fas fa-bolt"></i> <span data-ar="اختبار الآن" data-en="Test Now">اختبار الآن</span>
                         </button>
                         <button class="btn danger" onclick="stopAutoUpdate()">
-                            <i class="fas fa-stop"></i> <span data-ar="إيقاف" data-en="Stop">إيقاف</span>
+                            <i class="fas fa-stop"></i> <span data-ar="إيقاف التحديث" data-en="Stop Update">إيقاف التحديث</span>
                         </button>
                     </div>
                     
@@ -1085,7 +882,7 @@
                     <div class="grid-2">
                         <div class="form-group">
                             <label data-ar="اسم الصندوق" data-en="Fund Name">اسم الصندوق</label>
-                            <input type="text" id="price-fund-name" readonly style="background: rgba(0, 11, 88, 0.1); cursor: not-allowed;">
+                            <input type="text" id="price-fund-name" readonly style="background: rgba(67, 78, 120, 0.1); cursor: not-allowed;">
                         </div>
                         <div class="form-group">
                             <label data-ar="السعر الجديد" data-en="New Price">السعر الجديد</label>
@@ -1104,21 +901,24 @@
 
             <!-- Analytics Tab -->
             <div id="analytics" class="content">
-                <!-- الرصيد المالي -->
+                <!-- صافي الربح بعد الرسوم -->
                 <div class="card">
                     <div class="card-title">
-                        <i class="fas fa-wallet"></i>
-                        <span data-ar="الرصيد المالي" data-en="Financial Balance">الرصيد المالي</span>
+                        <i class="fas fa-calculator"></i>
+                        <span data-ar="صافي الربح بعد الرسوم" data-en="Net Profit After Fees">صافي الربح بعد الرسوم</span>
                     </div>
                     <div class="grid-2">
                         <div class="metric-box">
-                            <div class="metric-label"><i class="fas fa-piggy-bank"></i> <span data-ar="الرصيد الأصلي" data-en="Original Balance">الرصيد الأصلي</span></div>
-                            <div class="metric-value exact-number" id="original-balance">0</div>
+                            <div class="metric-label"><i class="fas fa-coins"></i> <span data-ar="إجمالي بيع الوثائق بسعر اليوم" data-en="Total Sale at Current Price">إجمالي بيع الوثائق بسعر اليوم</span></div>
+                            <div class="metric-value" id="total-sale-current">0</div>
                         </div>
-                        <div class="metric-box">
-                            <div class="metric-label"><i class="fas fa-coins"></i> <span data-ar="الرصيد الفعلي" data-en="Actual Balance">الرصيد الفعلي</span></div>
-                            <div class="metric-value exact-number" id="actual-balance">0</div>
+                        <div class="metric-box" style="background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%);">
+                            <div class="metric-label"><i class="fas fa-percent"></i> <span data-ar="صافي الربح بعد رسوم الاسترداد" data-en="Net Profit After Redemption Fees">صافي الربح بعد رسوم الاسترداد</span></div>
+                            <div class="metric-value" id="net-after-redemption-fees">0</div>
                         </div>
+                    </div>
+                    <div style="margin-top: 15px; padding: 12px; background: rgba(233, 127, 74, 0.1); border-radius: 8px; font-size: 12px; color: var(--on-surface);">
+                        <i class="fas fa-info-circle"></i> <span data-ar="حساب: (عدد الوثائق × السعر الحالي) - (رسوم الاسترداد %)" data-en="Calculation: (Units × Current Price) - (Redemption Fees %)">حساب: (عدد الوثائق × السعر الحالي) - (رسوم الاسترداد %)</span>
                     </div>
                 </div>
 
@@ -1129,19 +929,19 @@
                         <span data-ar="تجميع الأرباح" data-en="Profit Accumulation">تجميع الأرباح</span>
                     </div>
                     <div class="grid-4">
-                        <div class="metric-box" style="background: linear-gradient(135deg, var(--success) 0%, var(--secondary-dark) 100%);">
+                        <div class="metric-box" style="background: linear-gradient(135deg, var(--success) 0%, #1e7e34 100%);">
                             <div class="metric-label"><i class="fas fa-coins"></i> <span data-ar="المكسب الحقيقي" data-en="Real Profit">المكسب الحقيقي</span></div>
-                            <div class="metric-value exact-number" id="real-profit">0</div>
+                            <div class="metric-value" id="real-profit">0</div>
                         </div>
-                        <div class="metric-box" style="background: linear-gradient(135deg, var(--danger) 0%, #B71C1C 100%);">
+                        <div class="metric-box" style="background: linear-gradient(135deg, var(--danger) 0%, #c82333 100%);">
                             <div class="metric-label"><i class="fas fa-exclamation-triangle"></i> <span data-ar="الخسائر السابقة" data-en="Past Losses">الخسائر السابقة</span></div>
-                            <div class="metric-value exact-number" id="past-losses">0</div>
+                            <div class="metric-value" id="past-losses">0</div>
                         </div>
-                        <div class="metric-box" style="background: linear-gradient(135deg, var(--info) 0%, #0066CC 100%);">
-                            <div class="metric-label"><i class="fas fa-calculator"></i> <span data-ar="صافي الربح بعد الرسوم" data-en="Net Profit After Fees">صافي الربح بعد الرسوم</span></div>
-                            <div class="metric-value exact-number" id="net-after-fees">0</div>
+                        <div class="metric-box" style="background: linear-gradient(135deg, var(--tertiary) 0%, var(--color-primary-900) 100%);">
+                            <div class="metric-label"><i class="fas fa-calculator"></i> <span data-ar="صافي الربح بعد جميع الرسوم" data-en="Net Profit After All Fees">صافي الربح بعد جميع الرسوم</span></div>
+                            <div class="metric-value" id="net-after-all-fees">0</div>
                         </div>
-                        <div class="metric-box" style="background: linear-gradient(135deg, var(--tertiary) 0%, #003F8A 100%);">
+                        <div class="metric-box" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);">
                             <div class="metric-label"><i class="fas fa-balance-scale"></i> <span data-ar="متوسط سعر الوثيقة" data-en="Avg Unit Price">متوسط سعر الوثيقة</span></div>
                             <div class="metric-value exact-number" id="avg-unit-price">0</div>
                         </div>
@@ -1199,19 +999,19 @@
                     <div class="card-title"><i class="fas fa-chart-bar"></i> <span data-ar="إحصائيات شاملة" data-en="Complete Statistics">إحصائيات شاملة</span></div>
                     <div class="grid-4">
                         <div>
-                            <div style="font-size: 12px; color: #999; margin-bottom: 8px;"><i class="fas fa-list"></i> <span data-ar="عدد الصناديق" data-en="Number of Funds">عدد الصناديق</span></div>
+                            <div style="font-size: 12px; color: var(--on-surface); opacity: 0.7; margin-bottom: 8px;"><i class="fas fa-list"></i> <span data-ar="عدد الصناديق" data-en="Number of Funds">عدد الصناديق</span></div>
                             <div style="font-size: 28px; font-weight: 700; color: var(--primary);" id="stats-funds">0</div>
                         </div>
                         <div>
-                            <div style="font-size: 12px; color: #999; margin-bottom: 8px;"><i class="fas fa-exchange-alt"></i> <span data-ar="عدد المعاملات" data-en="Total Transactions">عدد المعاملات</span></div>
+                            <div style="font-size: 12px; color: var(--on-surface); opacity: 0.7; margin-bottom: 8px;"><i class="fas fa-exchange-alt"></i> <span data-ar="عدد المعاملات" data-en="Total Transactions">عدد المعاملات</span></div>
                             <div style="font-size: 28px; font-weight: 700; color: var(--primary);" id="stats-transactions">0</div>
                         </div>
                         <div>
-                            <div style="font-size: 12px; color: #999; margin-bottom: 8px;"><i class="fas fa-trophy"></i> <span data-ar="أفضل صندوق" data-en="Best Fund">أفضل صندوق</span></div>
+                            <div style="font-size: 12px; color: var(--on-surface); opacity: 0.7; margin-bottom: 8px;"><i class="fas fa-trophy"></i> <span data-ar="أفضل صندوق" data-en="Best Fund">أفضل صندوق</span></div>
                             <div style="font-size: 18px; font-weight: 700; color: var(--success);" id="stats-best">--</div>
                         </div>
                         <div>
-                            <div style="font-size: 12px; color: #999; margin-bottom: 8px;"><i class="fas fa-exclamation-triangle"></i> <span data-ar="أسوأ صندوق" data-en="Worst Fund">أسوأ صندوق</span></div>
+                            <div style="font-size: 12px; color: var(--on-surface); opacity: 0.7; margin-bottom: 8px;"><i class="fas fa-exclamation-triangle"></i> <span data-ar="أسوأ صندوق" data-en="Worst Fund">أسوأ صندوق</span></div>
                             <div style="font-size: 18px; font-weight: 700; color: var(--danger);" id="stats-worst">--</div>
                         </div>
                     </div>
@@ -1225,23 +1025,26 @@
                     <div class="card-title">
                         <i class="fas fa-chart-bar"></i>
                         <span data-ar="إجماليات جميع الصناديق" data-en="Total for All Funds">إجماليات جميع الصناديق</span>
+                        <button class="btn secondary" onclick="exportGeneralInfoPDF()" style="margin-right: auto; font-size: 12px; padding: 6px 12px;">
+                            <i class="fas fa-file-pdf"></i> <span data-ar="تصدير PDF" data-en="Export PDF">تصدير PDF</span>
+                        </button>
                     </div>
                     <div class="grid-4">
                         <div class="metric-box">
                             <div class="metric-label"><i class="fas fa-money-bill-wave"></i> <span data-ar="إجمالي المبلغ المدفوع" data-en="Total Amount Paid">إجمالي المبلغ المدفوع</span></div>
-                            <div class="metric-value exact-number" id="total-paid-all">0</div>
+                            <div class="metric-value" id="total-paid-all">0</div>
                         </div>
-                        <div class="metric-box" style="background: linear-gradient(135deg, var(--success) 0%, var(--secondary-dark) 100%);">
+                        <div class="metric-box" style="background: linear-gradient(135deg, var(--success) 0%, #1e7e34 100%);">
                             <div class="metric-label"><i class="fas fa-chart-line"></i> <span data-ar="إجمالي الربح المحتمل" data-en="Total Potential Profit">إجمالي الربح المحتمل</span></div>
-                            <div class="metric-value exact-number" id="total-profit-all">0</div>
+                            <div class="metric-value" id="total-profit-all">0</div>
                         </div>
                         <div class="metric-box">
                             <div class="metric-label"><i class="fas fa-balance-scale"></i> <span data-ar="إجمالي الربح/الخسارة" data-en="Total Profit/Loss">إجمالي الربح/الخسارة</span></div>
-                            <div class="metric-value exact-number" id="total-pl-all">0</div>
+                            <div class="metric-value" id="total-pl-all">0</div>
                         </div>
-                        <div class="metric-box" style="background: linear-gradient(135deg, var(--tertiary) 0%, #003F8A 100%);">
+                        <div class="metric-box" style="background: linear-gradient(135deg, var(--tertiary) 0%, var(--color-primary-900) 100%);">
                             <div class="metric-label"><i class="fas fa-cubes"></i> <span data-ar="إجمالي الوثائق" data-en="Total Units">إجمالي الوثائق</span></div>
-                            <div class="metric-value exact-number" id="total-units-all">0</div>
+                            <div class="metric-value" id="total-units-all">0</div>
                         </div>
                     </div>
                 </div>
@@ -1260,7 +1063,7 @@
                                     <th><i class="fas fa-cubes"></i> <span data-ar="الوثائق" data-en="Units">الوثائق</span></th>
                                     <th><i class="fas fa-money-bill"></i> <span data-ar="إجمالي الاستثمار" data-en="Total Investment">إجمالي الاستثمار</span></th>
                                     <th><i class="fas fa-chart-line"></i> <span data-ar="الربح بدون رسوم" data-en="Profit Without Fees">الربح بدون رسوم</span></th>
-                                    <th><i class="fas fa-calculator"></i> <span data-ar="الربح بعد الرسوم" data-en="Profit After Fees">الربح بعد الرسوم</span></th>
+                                    <th><i class="fas fa-calculator"></i> <span data-ar="الربح بعد رسوم الاسترداد" data-en="Profit After Redemption Fees">الربح بعد رسوم الاسترداد</span></th>
                                     <th><i class="fas fa-tag"></i> <span data-ar="متوسط الشراء" data-en="Avg Buy">متوسط الشراء</span></th>
                                     <th><i class="fas fa-tag"></i> <span data-ar="السعر الحالي" data-en="Current Price">السعر الحالي</span></th>
                                     <th><i class="fas fa-dollar-sign"></i> <span data-ar="القيمة الحالية" data-en="Current Value">القيمة الحالية</span></th>
@@ -1277,7 +1080,7 @@
             <div id="export" class="content">
                 <div class="card">
                     <div class="card-title"><i class="fas fa-download"></i> <span data-ar="تصدير البيانات" data-en="Export Data">تصدير البيانات</span></div>
-                    <div class="btn-group">
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                         <button class="btn" onclick="exportJSON()">
                             <i class="fas fa-database"></i> JSON
                         </button>
@@ -1296,7 +1099,7 @@
                         <label data-ar="اختر ملف" data-en="Choose File">اختر ملف</label>
                         <input type="file" id="import-file" accept=".json">
                     </div>
-                    <div class="btn-group">
+                    <div style="display: flex; gap: 10px;">
                         <button class="btn" onclick="importFile()">
                             <i class="fas fa-check"></i> <span data-ar="استيراد" data-en="Import">استيراد</span>
                         </button>
@@ -1308,7 +1111,7 @@
 
                 <div class="card">
                     <div class="card-title"><i class="fas fa-info-circle"></i> <span data-ar="معلومات التطبيق" data-en="App Info">معلومات التطبيق</span></div>
-                    <div style="font-size: 13px; color: #666;">
+                    <div style="font-size: 13px; color: var(--on-surface);">
                         <p><span data-ar="الصناديق:" data-en="Funds:">الصناديق:</span> <strong id="info-funds">0</strong></p>
                         <p><span data-ar="المعاملات:" data-en="Transactions:">المعاملات:</span> <strong id="info-transactions">0</strong></p>
                         <p><span data-ar="آخر تحديث:" data-en="Last Updated:">آخر تحديث:</span> <strong id="info-updated">--</strong></p>
@@ -1323,7 +1126,7 @@
         <div class="modal-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 2px solid var(--border);">
                 <h2 style="color: var(--primary); font-size: 18px; font-weight: 600;"><i class="fas fa-plus-circle"></i> <span id="modal-title" data-ar="إضافة صندوق جديد" data-en="Add New Fund">إضافة صندوق جديد</span></h2>
-                <button onclick="closeFundModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+                <button onclick="closeFundModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--on-surface); opacity: 0.7;">&times;</button>
             </div>
             <input type="hidden" id="fund-id">
             <div class="form-group">
@@ -1348,7 +1151,7 @@
                     <input type="number" id="fund-red-fee" placeholder="0" step="any" value="0">
                 </div>
             </div>
-            <div class="btn-group">
+            <div style="display: flex; gap: 10px;">
                 <button class="btn" onclick="saveFund()">
                     <i class="fas fa-check"></i> <span id="save-btn-text" data-ar="إضافة" data-en="Add">إضافة</span>
                 </button>
@@ -1364,7 +1167,7 @@
         <div class="modal-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 2px solid var(--border);">
                 <h2 style="color: var(--primary); font-size: 18px; font-weight: 600;"><i class="fas fa-edit"></i> <span data-ar="تعديل معاملة" data-en="Edit Transaction">تعديل معاملة</span></h2>
-                <button onclick="closeEditTxModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+                <button onclick="closeEditTxModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--on-surface); opacity: 0.7;">&times;</button>
             </div>
             <div class="grid-2">
                 <div class="form-group">
@@ -1380,7 +1183,7 @@
                 </div>
                 <div class="form-group">
                     <label data-ar="عدد الوثائق" data-en="Units">عدد الوثائق</label>
-                    <input type="text" id="edit-tx-units" placeholder="0">
+                    <input type="number" id="edit-tx-units" placeholder="0" step="1">
                 </div>
                 <div class="form-group">
                     <label data-ar="سعر الوثيقة" data-en="Price">سعر الوثيقة</label>
@@ -1388,7 +1191,7 @@
                 </div>
             </div>
             <input type="hidden" id="edit-tx-index">
-            <div class="btn-group">
+            <div style="display: flex; gap: 10px;">
                 <button class="btn" onclick="saveEditedTransaction()">
                     <i class="fas fa-save"></i> <span data-ar="حفظ" data-en="Save">حفظ</span>
                 </button>
@@ -1399,11 +1202,6 @@
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
-
     <script>
         // ============ STATE ============
         let funds = [];
@@ -1413,7 +1211,6 @@
         let chartInstances = {};
         let autoUpdateTimer = null;
         let autoUpdateSettings = JSON.parse(localStorage.getItem('auto_update_settings') || '{}');
-        let editingFundId = null;
 
         // Language labels
         const labels = {
@@ -1526,7 +1323,6 @@
 
         // ============ FUNDS ============
         function showFundModal(fundId = null) {
-            editingFundId = fundId;
             const modalTitle = document.getElementById('modal-title');
             const saveBtnText = document.getElementById('save-btn-text');
             
@@ -1565,7 +1361,6 @@
 
         function closeFundModal() {
             document.getElementById('fundModal').classList.remove('active');
-            editingFundId = null;
         }
 
         function saveFund() {
@@ -1599,7 +1394,8 @@
                     subscriptionFee: subFee,
                     redemptionFee: redFee,
                     transactions: [],
-                    priceHistory: [{ date: new Date().toISOString().split('T')[0], price }]
+                    priceHistory: [{ date: new Date().toISOString().split('T')[0], price }],
+                    autoUpdateSettings: {}
                 };
                 funds.push(fund);
                 if (!currentFundId) currentFundId = fund.id;
@@ -1658,14 +1454,14 @@
                 tr.innerHTML = `
                     <td>${f.name}</td>
                     <td>${f.code}</td>
-                    <td class="exact-number">${f.price}</td>
+                    <td class="exact-number">${formatDisplay(f.price, true)}</td>
                     <td>${fees}</td>
                     <td>
-                        <div class="action-buttons">
-                            <button class="btn info small" onclick="showFundModal('${f.id}')" title="${lang === 'ar' ? 'تعديل' : 'Edit'}">
+                        <div style="display: flex; gap: 5px;">
+                            <button class="btn" onclick="showFundModal('${f.id}')" style="padding: 4px 8px; font-size: 11px;" title="${lang === 'ar' ? 'تعديل' : 'Edit'}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn danger small" onclick="deleteFund('${f.id}')" title="${lang === 'ar' ? 'حذف' : 'Delete'}">
+                            <button class="btn danger" onclick="deleteFund('${f.id}')" style="padding: 4px 8px; font-size: 11px;" title="${lang === 'ar' ? 'حذف' : 'Delete'}">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -1673,6 +1469,23 @@
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        // ============ HELPER FUNCTIONS ============
+        function formatDisplay(num, exact = false) {
+            if (num === null || num === undefined || num === '' || isNaN(num)) return '0';
+            
+            if (exact) {
+                // عرض السعر كما هو دون تقريب
+                return parseFloat(num).toString();
+            }
+            
+            // تقريب إلى رقمين عشريين لجميع الأرقام الأخرى
+            return parseFloat(num).toFixed(2);
+        }
+
+        function formatCurrency(num) {
+            return formatDisplay(num, false);
         }
 
         // ============ TRANSACTIONS ============
@@ -1757,24 +1570,6 @@
             setToday();
         }
 
-        function calculateHoldingPeriod(startDate, endDate = new Date()) {
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-            const diffTime = Math.abs(end - start);
-            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-            
-            const years = Math.floor(diffDays / 365);
-            const months = Math.floor((diffDays % 365) / 30);
-            const days = diffDays % 30;
-            
-            let result = [];
-            if (years > 0) result.push(`${years} ${years === 1 ? labels[lang].years : labels[lang].years}`);
-            if (months > 0) result.push(`${months} ${months === 1 ? labels[lang].months : labels[lang].months}`);
-            if (days > 0 || result.length === 0) result.push(`${days} ${days === 1 ? labels[lang].days : labels[lang].days}`);
-            
-            return result.join(` ${labels[lang].and} `);
-        }
-
         function renderTransactionsTable() {
             const fund = getCurrentFund();
             const tbody = document.getElementById('transactions-table');
@@ -1784,28 +1579,22 @@
 
             fund.transactions.forEach((tx, idx) => {
                 const amount = parseFloat(tx.units) * parseFloat(tx.price);
-                const fee = tx.type === 'buy' ? amount * (fund.subscriptionFee / 100) : amount * (fund.redemptionFee / 100);
-                const net = amount - fee;
-                const holdingPeriod = calculateHoldingPeriod(tx.date);
                 
                 const tr = document.createElement('tr');
                 const typeText = tx.type === 'buy' ? labels[lang].buy : labels[lang].sell;
                 const dateStr = new Date(tx.date).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US');
                 tr.innerHTML = `
                     <td>${dateStr}</td>
-                    <td><span class="holding-badge"><i class="fas fa-clock"></i> ${holdingPeriod}</span></td>
                     <td><span class="badge ${tx.type}">${typeText}</span></td>
-                    <td class="exact-number">${tx.units}</td>
-                    <td class="exact-number">${tx.price}</td>
-                    <td class="exact-number">${amount}</td>
-                    <td class="exact-number">${fee}</td>
-                    <td class="exact-number">${net}</td>
+                    <td>${tx.units}</td>
+                    <td class="exact-number">${formatDisplay(tx.price, true)}</td>
+                    <td>${formatCurrency(amount)}</td>
                     <td>
-                        <div class="action-buttons">
-                            <button class="btn info action-btn" onclick="editTransaction(${idx})" title="${lang === 'ar' ? 'تعديل' : 'Edit'}">
+                        <div style="display: flex; gap: 5px;">
+                            <button class="btn" onclick="editTransaction(${idx})" style="padding: 4px 8px; font-size: 11px;" title="${lang === 'ar' ? 'تعديل' : 'Edit'}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn danger action-btn" onclick="deleteTransaction('${fund.id}', ${idx})" title="${lang === 'ar' ? 'حذف' : 'Delete'}">
+                            <button class="btn danger" onclick="deleteTransaction('${fund.id}', ${idx})" style="padding: 4px 8px; font-size: 11px;" title="${lang === 'ar' ? 'حذف' : 'Delete'}">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -1818,43 +1607,61 @@
         // ============ CALCULATIONS ============
         function calculateMetrics(fund) {
             let units = 0, invested = 0, buyUnits = 0, buyAmount = 0;
+            let totalSubscriptionFees = 0, totalRedemptionFees = 0;
 
             fund.transactions.forEach(tx => {
                 const amount = parseFloat(tx.units) * parseFloat(tx.price);
-                const fee = tx.type === 'buy' ? amount * (fund.subscriptionFee / 100) : amount * (fund.redemptionFee / 100);
-                const net = amount - fee;
-
+                
                 if (tx.type === 'buy') {
+                    const fee = amount * (fund.subscriptionFee / 100);
+                    const net = amount - fee;
                     units += parseFloat(tx.units);
                     invested += net;
                     buyUnits += parseFloat(tx.units);
                     buyAmount += net;
+                    totalSubscriptionFees += fee;
                 } else {
+                    const fee = amount * (fund.redemptionFee / 100);
+                    const net = amount - fee;
                     units -= parseFloat(tx.units);
                     invested -= net;
+                    totalRedemptionFees += fee;
                 }
             });
 
             const avgPrice = buyUnits > 0 ? buyAmount / buyUnits : 0;
             const value = units * parseFloat(fund.price || 0);
-            const profit = value - invested;
-            const returnPct = invested > 0 ? (profit / invested) * 100 : 0;
+            const profitWithoutFees = value - invested;
+            const profitAfterFees = profitWithoutFees - totalSubscriptionFees - totalRedemptionFees;
+            const returnPct = invested > 0 ? (profitAfterFees / invested) * 100 : 0;
 
-            return { units, avgPrice, value, invested, profit, returnPct };
+            return { 
+                units, 
+                avgPrice, 
+                value, 
+                invested, 
+                profitWithoutFees,
+                profitAfterFees,
+                returnPct,
+                totalSubscriptionFees,
+                totalRedemptionFees
+            };
         }
 
-        function calculateTotalFees(fund) {
-            let totalFees = 0;
+        // حساب صافي الربح بعد رسوم الاسترداد فقط (للعرض في صفحة التحليل)
+        function calculateNetAfterRedemptionFees(fund) {
+            const m = calculateMetrics(fund);
+            // إجمالي بيع الوثائق بسعر اليوم
+            const totalSaleAtCurrentPrice = m.units * parseFloat(fund.price || 0);
+            // خصم رسوم الاسترداد
+            const redemptionFeeAmount = totalSaleAtCurrentPrice * (fund.redemptionFee / 100);
+            const netAfterRedemption = totalSaleAtCurrentPrice - redemptionFeeAmount;
             
-            fund.transactions.forEach(tx => {
-                const amount = parseFloat(tx.units) * parseFloat(tx.price);
-                const fee = tx.type === 'buy' 
-                    ? amount * (fund.subscriptionFee / 100) 
-                    : amount * (fund.redemptionFee / 100);
-                totalFees += fee;
-            });
-            
-            return totalFees;
+            return {
+                totalSaleAtCurrentPrice,
+                redemptionFeeAmount,
+                netAfterRedemption
+            };
         }
 
         function updatePortfolio() {
@@ -1864,27 +1671,26 @@
             const m = calculateMetrics(fund);
 
             document.getElementById('total-units').textContent = m.units;
-            document.getElementById('avg-price').textContent = m.avgPrice;
-            document.getElementById('current-price').textContent = fund.price || 0;
-            document.getElementById('current-value').textContent = m.value;
-            document.getElementById('total-invested').textContent = m.invested;
-            document.getElementById('net-profit').textContent = m.profit;
-            document.getElementById('return-pct').textContent = m.returnPct + '%';
+            document.getElementById('avg-price').textContent = formatDisplay(m.avgPrice, true);
+            document.getElementById('current-price').textContent = formatDisplay(fund.price, true);
+            document.getElementById('current-value').textContent = formatCurrency(m.value);
+            document.getElementById('total-invested').textContent = formatCurrency(m.invested);
+            document.getElementById('net-profit').textContent = formatCurrency(m.profitAfterFees);
+            document.getElementById('return-pct').textContent = formatDisplay(m.returnPct) + '%';
 
             const profitEl = document.getElementById('net-profit');
-            profitEl.style.color = m.profit >= 0 ? 'var(--success)' : 'var(--danger)';
+            profitEl.style.color = m.profitAfterFees >= 0 ? 'var(--success)' : 'var(--danger)';
             
             const returnEl = document.getElementById('return-pct');
             returnEl.style.color = m.returnPct >= 0 ? 'var(--success)' : 'var(--danger)';
 
             const valueBox = document.getElementById('value-box');
-            if (m.profit >= 0) {
-                valueBox.style.background = 'linear-gradient(135deg, var(--success) 0%, var(--secondary-dark) 100%)';
+            if (m.profitAfterFees >= 0) {
+                valueBox.style.background = 'linear-gradient(135deg, var(--success) 0%, #1e7e34 100%)';
             } else {
-                valueBox.style.background = 'linear-gradient(135deg, var(--danger) 0%, #B71C1C 100%)';
+                valueBox.style.background = 'linear-gradient(135deg, var(--danger) 0%, #c82333 100%)';
             }
 
-            updateRecommendationStrategy(m, fund);
             renderPriceHistory();
             updatePricesCount();
             updateLastUpdate();
@@ -1907,67 +1713,6 @@
             document.getElementById('prices-count').textContent = count;
         }
 
-        // ============ RECOMMENDATION ENGINE ============
-        function generateRecommendationStrategy(fund, metrics) {
-            const strategy = {
-                title: 'توصيات',
-                actions: [],
-                confidence: 0,
-                explanation: ''
-            };
-            
-            const currentPrice = parseFloat(fund.price || 0);
-            const profitPercentage = metrics.returnPct;
-            
-            if (metrics.units === 0) {
-                strategy.actions = ['ابدأ الاستثمار', 'راقب السوق', 'خطط للاستثمار طويل المدى'];
-                strategy.confidence = 75;
-                strategy.explanation = 'لا توجد استثمارات حالية. يوصى ببدء الاستثمار بشراء أولي صغير لاختبار السوق.';
-            } else if (profitPercentage > 20) {
-                strategy.actions = ['بيع جزئي للأرباح', 'إعادة استثمار', 'احتفظ بجزء نقداً'];
-                strategy.confidence = 85;
-                strategy.explanation = `أرباح قوية بنسبة ${profitPercentage.toFixed(2)}%. يوصى بأخذ بعض الأرباح وتأمين المكاسب.`;
-            } else if (profitPercentage > 10) {
-                strategy.actions = ['تعزيز المركز', 'مراقبة السوق', 'وضع أوامر وقف خسارة'];
-                strategy.confidence = 70;
-                strategy.explanation = `أداء جيد بنسبة ${profitPercentage.toFixed(2)}%. يمكن زيادة المركز عند الفرص المناسبة.`;
-            } else if (profitPercentage > -5) {
-                strategy.actions = ['الاستقرار والمراقبة', 'حافظ على الوضع', 'تابع الأخبار'];
-                strategy.confidence = 60;
-                strategy.explanation = `وضع مستقر بنسبة ${profitPercentage.toFixed(2)}%. يوصى بالمتابعة وعدم التحرك بعجلة.`;
-            } else if (profitPercentage > -15) {
-                strategy.actions = ['متوسط التكلفة للأسفل', 'شراء عند الانخفاضات', 'تجنب البيع بالذعر'];
-                strategy.confidence = 65;
-                strategy.explanation = `خسائر متوسطة بنسبة ${profitPercentage.toFixed(2)}%. يمكن تقليل متوسط الشراء بالشراء عند الانخفاضات.`;
-            } else {
-                strategy.actions = ['إعادة التقييم', 'تقييم الأسباب', 'استشارة خبير'];
-                strategy.confidence = 50;
-                strategy.explanation = `خسائر كبيرة بنسبة ${profitPercentage.toFixed(2)}%. يوصى بإعادة تقييم الاستراتيجية الاستثمارية.`;
-            }
-            
-            return strategy;
-        }
-
-        function updateRecommendationStrategy(metrics, fund) {
-            const strategy = generateRecommendationStrategy(fund, metrics);
-            const recText = document.getElementById('recommendation-text');
-            const recStrategy = document.getElementById('recommendation-strategy');
-            const recActions = document.getElementById('recommendation-actions');
-            const recConf = document.getElementById('recommendation-confidence-text');
-            
-            recText.textContent = strategy.title;
-            recStrategy.textContent = strategy.explanation;
-            recConf.textContent = `ثقة: ${Math.round(strategy.confidence)}%`;
-            
-            recActions.innerHTML = '';
-            strategy.actions.forEach(action => {
-                const btn = document.createElement('button');
-                btn.className = 'btn small accent';
-                btn.textContent = action;
-                recActions.appendChild(btn);
-            });
-        }
-
         function renderPriceHistory() {
             const fund = getCurrentFund();
             const tbody = document.getElementById('price-history-table');
@@ -1988,8 +1733,8 @@
                 const dateStr = new Date(entry.date).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US');
                 tr.innerHTML = `
                     <td>${dateStr}</td>
-                    <td class="exact-number">${entry.price}</td>
-                    <td class="${change >= 0 ? 'positive' : 'negative'}">${change >= 0 ? '+' : ''}${change.toFixed(4)}%</td>
+                    <td class="exact-number">${formatDisplay(entry.price, true)}</td>
+                    <td class="${change >= 0 ? 'positive' : 'negative'}">${change >= 0 ? '+' : ''}${formatDisplay(change)}%</td>
                     <td><i class="fas ${statusIcon}"></i> ${statusText}</td>
                 `;
                 tbody.appendChild(tr);
@@ -1999,29 +1744,23 @@
         // ============ ADVANCED ANALYTICS ============
         function calculateAdvancedAnalytics(fund) {
             const metrics = calculateMetrics(fund);
-            const totalFees = calculateTotalFees(fund);
+            const netRedemption = calculateNetAfterRedemptionFees(fund);
             
             // تجميع الأرباح
-            const realProfit = Math.max(metrics.profit, 0);
-            const pastLosses = Math.abs(Math.min(metrics.profit, 0));
-            const netAfterFees = metrics.profit - totalFees;
+            const realProfit = Math.max(metrics.profitAfterFees, 0);
+            const pastLosses = Math.abs(Math.min(metrics.profitAfterFees, 0));
             const avgUnitPrice = metrics.avgPrice;
             
             // تأثير العمليات مع مراعاة الرسوم
             const transactionImpact = calculateTransactionImpactWithFees(fund);
             
-            // الرصيد
-            const originalBalance = metrics.invested;
-            const actualBalance = metrics.value;
-            
             return {
                 realProfit,
                 pastLosses,
-                netAfterFees,
+                netAfterRedemption: netRedemption.netAfterRedemption,
+                totalSaleCurrent: netRedemption.totalSaleAtCurrentPrice,
                 avgUnitPrice,
-                transactionImpact,
-                originalBalance,
-                actualBalance
+                transactionImpact
             };
         }
 
@@ -2044,13 +1783,13 @@
                 if (tx.type === 'buy') {
                     cumulativeUnits += units;
                     cumulativeInvestment += amount - fee;
-                    impact = - (amount + fee); // تكلفة الشراء + الرسوم
-                    feeImpact = -fee; // تأثير الرسوم
+                    impact = - (amount + fee);
+                    feeImpact = -fee;
                 } else {
                     cumulativeUnits -= units;
                     const avgPrice = cumulativeInvestment / cumulativeUnits;
                     impact = (units * parseFloat(fund.price)) - (units * avgPrice) - fee;
-                    feeImpact = -fee; // تأثير الرسوم
+                    feeImpact = -fee;
                 }
                 
                 impacts.push({
@@ -2073,12 +1812,12 @@
             const analytics = calculateAdvancedAnalytics(fund);
             
             // تحديث واجهة التحليلات
-            document.getElementById('real-profit').textContent = analytics.realProfit;
-            document.getElementById('past-losses').textContent = analytics.pastLosses;
-            document.getElementById('net-after-fees').textContent = analytics.netAfterFees;
-            document.getElementById('avg-unit-price').textContent = analytics.avgUnitPrice;
-            document.getElementById('original-balance').textContent = analytics.originalBalance;
-            document.getElementById('actual-balance').textContent = analytics.actualBalance;
+            document.getElementById('real-profit').textContent = formatCurrency(analytics.realProfit);
+            document.getElementById('past-losses').textContent = formatCurrency(analytics.pastLosses);
+            document.getElementById('net-after-redemption-fees').textContent = formatCurrency(analytics.netAfterRedemption);
+            document.getElementById('total-sale-current').textContent = formatCurrency(analytics.totalSaleCurrent);
+            document.getElementById('avg-unit-price').textContent = formatDisplay(analytics.avgUnitPrice, true);
+            document.getElementById('net-after-all-fees').textContent = formatCurrency(analytics.netAfterRedemption);
             
             // تحديث جدول تأثير العمليات
             updateProfitImpactTable(analytics.transactionImpact);
@@ -2100,10 +1839,10 @@
                 tr.innerHTML = `
                     <td>${dateStr}</td>
                     <td><span class="badge ${impact.type}">${typeText}</span></td>
-                    <td class="exact-number">${impact.units}</td>
-                    <td class="exact-number">${impact.price}</td>
-                    <td class="${impactClass} exact-number">${impactSign}${impact.impact}</td>
-                    <td class="${feeClass} exact-number">${feeSign}${impact.feeImpact}</td>
+                    <td>${impact.units}</td>
+                    <td class="exact-number">${formatDisplay(impact.price, true)}</td>
+                    <td class="${impactClass}">${impactSign}${formatCurrency(impact.impact)}</td>
+                    <td class="${feeClass}">${feeSign}${formatCurrency(impact.feeImpact)}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -2121,20 +1860,19 @@
             
             funds.forEach(fund => {
                 const m = calculateMetrics(fund);
-                const totalFees = calculateTotalFees(fund);
-                const profitWithoutFees = m.profit + totalFees;
+                const netRedemption = calculateNetAfterRedemptionFees(fund);
                 
                 totalPaid += m.invested;
-                totalPotentialProfit += Math.max(m.profit, 0);
-                totalProfitLoss += m.profit;
+                totalPotentialProfit += Math.max(m.profitAfterFees, 0);
+                totalProfitLoss += m.profitAfterFees;
                 totalUnits += m.units;
                 
                 fundsDetails.push({
                     name: fund.name,
                     units: m.units,
                     invested: m.invested,
-                    profitWithoutFees: profitWithoutFees,
-                    profitAfterFees: m.profit,
+                    profitWithoutFees: m.profitWithoutFees,
+                    profitAfterRedemptionFees: netRedemption.netAfterRedemption,
                     avgPrice: m.avgPrice,
                     currentPrice: fund.price,
                     currentValue: m.value,
@@ -2143,9 +1881,9 @@
             });
             
             // تحديث الإجماليات
-            document.getElementById('total-paid-all').textContent = totalPaid;
-            document.getElementById('total-profit-all').textContent = totalPotentialProfit;
-            document.getElementById('total-pl-all').textContent = totalProfitLoss;
+            document.getElementById('total-paid-all').textContent = formatCurrency(totalPaid);
+            document.getElementById('total-profit-all').textContent = formatCurrency(totalPotentialProfit);
+            document.getElementById('total-pl-all').textContent = formatCurrency(totalProfitLoss);
             document.getElementById('total-units-all').textContent = totalUnits;
             
             // تحديث جدول التفاصيل
@@ -2163,14 +1901,14 @@
                 
                 tr.innerHTML = `
                     <td><strong>${fund.name}</strong></td>
-                    <td class="exact-number">${fund.units}</td>
-                    <td class="exact-number">${fund.invested}</td>
-                    <td class="exact-number">${fund.profitWithoutFees}</td>
-                    <td class="exact-number">${fund.profitAfterFees}</td>
-                    <td class="exact-number">${fund.avgPrice}</td>
-                    <td class="exact-number">${fund.currentPrice}</td>
-                    <td class="exact-number">${fund.currentValue}</td>
-                    <td class="${returnClass}">${returnSign}${fund.returnPct.toFixed(2)}%</td>
+                    <td>${fund.units}</td>
+                    <td>${formatCurrency(fund.invested)}</td>
+                    <td>${formatCurrency(fund.profitWithoutFees)}</td>
+                    <td>${formatCurrency(fund.profitAfterRedemptionFees)}</td>
+                    <td class="exact-number">${formatDisplay(fund.avgPrice, true)}</td>
+                    <td class="exact-number">${formatDisplay(fund.currentPrice, true)}</td>
+                    <td>${formatCurrency(fund.currentValue)}</td>
+                    <td class="${returnClass}">${returnSign}${formatDisplay(fund.returnPct)}%</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -2210,6 +1948,9 @@
             // تحميل الإعدادات المحفوظة
             loadAutoUpdateSettings();
             
+            // إعداد قائمة الصناديق للتحديث التلقائي
+            updateAutoUpdateFundSelector();
+            
             // التحقق من التحديث اليومي
             checkDailyUpdate();
             
@@ -2217,67 +1958,105 @@
             setupDailyTimer();
         }
 
-        function loadAutoUpdateSettings() {
-            const settings = autoUpdateSettings;
+        function updateAutoUpdateFundSelector() {
+            const select = document.getElementById('auto-update-fund-select');
+            select.innerHTML = '<option value="" data-ar="اختر صندوق" data-en="Select Fund">اختر صندوق</option>';
             
-            if (settings.url) {
-                document.getElementById('auto-update-url').value = settings.url;
-            }
-            if (settings.elementCode) {
-                document.getElementById('element-code').value = settings.elementCode;
-            }
-            if (settings.updateTime) {
-                document.getElementById('update-time').value = settings.updateTime;
-            }
+            funds.forEach(f => {
+                const opt = document.createElement('option');
+                opt.value = f.id;
+                opt.textContent = `${f.name} (${f.code})`;
+                select.appendChild(opt);
+            });
+            
+            select.addEventListener('change', (e) => {
+                const fundId = e.target.value;
+                if (fundId) {
+                    loadFundAutoUpdateSettings(fundId);
+                }
+            });
+        }
+
+        function loadFundAutoUpdateSettings(fundId) {
+            const fund = funds.find(f => f.id === fundId);
+            if (!fund) return;
+            
+            const settings = fund.autoUpdateSettings || {};
+            
+            document.getElementById('auto-update-url').value = settings.url || '';
+            document.getElementById('element-code').value = settings.elementCode || '.price-element';
+            document.getElementById('update-time').value = settings.updateTime || '09:00';
+            document.getElementById('update-frequency').value = settings.frequency || 'daily';
+            
             if (settings.lastUpdate) {
                 document.getElementById('last-auto-update').textContent = 
-                    `آخر تحديث: ${new Date(settings.lastUpdate).toLocaleString('ar-EG')}`;
+                    `${lang === 'ar' ? 'آخر تحديث:' : 'Last Update:'} ${new Date(settings.lastUpdate).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}`;
+            } else {
+                document.getElementById('last-auto-update').textContent = 
+                    lang === 'ar' ? 'آخر تحديث: --' : 'Last Update: --';
             }
         }
 
         function saveAutoUpdateSettings() {
+            const fundId = document.getElementById('auto-update-fund-select').value;
+            if (!fundId) {
+                showAutoUpdateStatus(lang === 'ar' ? 'الرجاء اختيار صندوق' : 'Please select a fund', 'error');
+                return;
+            }
+
             const url = document.getElementById('auto-update-url').value.trim();
             const elementCode = document.getElementById('element-code').value.trim();
             const updateTime = document.getElementById('update-time').value;
+            const frequency = document.getElementById('update-frequency').value;
             
             if (!url || !elementCode) {
-                showAutoUpdateStatus('الرجاء إدخال رابط الموقع وكود العنصر', 'error');
+                showAutoUpdateStatus(lang === 'ar' ? 'الرجاء إدخال رابط الموقع وكود العنصر' : 'Please enter website URL and element code', 'error');
                 return;
             }
             
-            autoUpdateSettings = {
+            const fund = funds.find(f => f.id === fundId);
+            if (!fund) return;
+            
+            fund.autoUpdateSettings = {
                 url,
                 elementCode,
                 updateTime,
-                lastUpdate: new Date().toISOString()
+                frequency,
+                lastUpdate: new Date().toISOString(),
+                enabled: true
             };
             
-            localStorage.setItem('auto_update_settings', JSON.stringify(autoUpdateSettings));
-            showAutoUpdateStatus('تم حفظ الإعدادات بنجاح', 'success');
+            saveData();
+            showAutoUpdateStatus(lang === 'ar' ? 'تم حفظ الإعدادات بنجاح' : 'Settings saved successfully', 'success');
             
             // تحديث عرض آخر تحديث
             document.getElementById('last-auto-update').textContent = 
-                `آخر تحديث: ${new Date().toLocaleString('ar-EG')}`;
+                `${lang === 'ar' ? 'آخر تحديث:' : 'Last Update:'} ${new Date().toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}`;
             
             // إعادة إعداد المؤقت
             setupDailyTimer();
         }
 
         function stopAutoUpdate() {
-            if (autoUpdateTimer) {
-                clearInterval(autoUpdateTimer);
-                autoUpdateTimer = null;
+            const fundId = document.getElementById('auto-update-fund-select').value;
+            if (!fundId) {
+                showAutoUpdateStatus(lang === 'ar' ? 'الرجاء اختيار صندوق' : 'Please select a fund', 'error');
+                return;
             }
+
+            const fund = funds.find(f => f.id === fundId);
+            if (!fund) return;
             
-            autoUpdateSettings = {};
-            localStorage.removeItem('auto_update_settings');
+            fund.autoUpdateSettings = {};
+            saveData();
             
             document.getElementById('auto-update-url').value = '';
             document.getElementById('element-code').value = '.price-element';
             document.getElementById('update-time').value = '09:00';
-            document.getElementById('last-auto-update').textContent = 'آخر تحديث: --';
+            document.getElementById('update-frequency').value = 'daily';
+            document.getElementById('last-auto-update').textContent = lang === 'ar' ? 'آخر تحديث: --' : 'Last Update: --';
             
-            showAutoUpdateStatus('تم إيقاف التحديث التلقائي', 'success');
+            showAutoUpdateStatus(lang === 'ar' ? 'تم إيقاف التحديث التلقائي' : 'Auto update stopped', 'success');
         }
 
         function showAutoUpdateStatus(message, type) {
@@ -2292,11 +2071,17 @@
         }
 
         async function testAutoUpdate() {
+            const fundId = document.getElementById('auto-update-fund-select').value;
+            if (!fundId) {
+                showAutoUpdateStatus(lang === 'ar' ? 'الرجاء اختيار صندوق' : 'Please select a fund', 'error');
+                return;
+            }
+
             const url = document.getElementById('auto-update-url').value;
             const elementCode = document.getElementById('element-code').value;
             
             if (!url || !elementCode) {
-                showAutoUpdateStatus('الرجاء إدخال الرابط وكود العنصر', 'error');
+                showAutoUpdateStatus(lang === 'ar' ? 'الرجاء إدخال الرابط وكود العنصر' : 'Please enter URL and element code', 'error');
                 return;
             }
             
@@ -2308,10 +2093,10 @@
                 if (priceMatch) {
                     const price = priceMatch[0];
                     document.getElementById('price-new').value = price;
-                    showAutoUpdateStatus(`تم العثور على السعر: ${price}`, 'success');
+                    showAutoUpdateStatus(`${lang === 'ar' ? 'تم العثور على السعر:' : 'Found price:'} ${price}`, 'success');
                     
                     // تحديث السعر الحالي للصندوق
-                    const fund = getCurrentFund();
+                    const fund = funds.find(f => f.id === fundId);
                     if (fund) {
                         const today = new Date().toISOString().split('T')[0];
                         fund.price = price;
@@ -2328,27 +2113,28 @@
                         renderAll();
                     }
                 } else {
-                    showAutoUpdateStatus('لم يتم العثور على السعر في الصفحة', 'error');
+                    showAutoUpdateStatus(lang === 'ar' ? 'لم يتم العثور على السعر في الصفحة' : 'Price not found on page', 'error');
                 }
             } catch (error) {
-                showAutoUpdateStatus('خطأ في جلب البيانات: ' + error.message, 'error');
+                showAutoUpdateStatus(`${lang === 'ar' ? 'خطأ في جلب البيانات:' : 'Error fetching data:'} ${error.message}`, 'error');
             }
         }
 
         function checkDailyUpdate() {
             const today = new Date().toISOString().split('T')[0];
-            const fund = getCurrentFund();
             
-            if (!fund || !autoUpdateSettings.url || !autoUpdateSettings.elementCode) {
-                return;
-            }
-            
-            // التحقق مما إذا تم تحديث السعر اليوم
-            const todayPrice = fund.priceHistory.find(p => p.date === today);
-            if (!todayPrice) {
-                // لم يتم تحديث السعر اليوم، قم بالتحديث التلقائي
-                performAutoUpdate();
-            }
+            funds.forEach(fund => {
+                if (!fund.autoUpdateSettings || !fund.autoUpdateSettings.enabled) {
+                    return;
+                }
+                
+                // التحقق مما إذا تم تحديث السعر اليوم
+                const todayPrice = fund.priceHistory.find(p => p.date === today);
+                if (!todayPrice && fund.autoUpdateSettings.url && fund.autoUpdateSettings.elementCode) {
+                    // لم يتم تحديث السعر اليوم، قم بالتحديث التلقائي
+                    performAutoUpdate(fund);
+                }
+            });
         }
 
         function setupDailyTimer() {
@@ -2356,15 +2142,9 @@
                 clearInterval(autoUpdateTimer);
             }
             
-            if (!autoUpdateSettings.updateTime) {
-                return;
-            }
-            
-            // حساب الوقت المتبقي للتحديث اليومي
-            const updateTime = autoUpdateSettings.updateTime;
+            // حساب الوقت المتبقي للتحديث اليومي (09:00)
             const now = new Date();
-            const [hours, minutes] = updateTime.split(':').map(Number);
-            const updateDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
+            const updateDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0);
             
             if (now > updateDate) {
                 updateDate.setDate(updateDate.getDate() + 1);
@@ -2374,13 +2154,21 @@
             
             // إعداد المؤقت
             autoUpdateTimer = setTimeout(() => {
-                performAutoUpdate();
+                performScheduledUpdates();
                 setupDailyTimer(); // إعادة ضبط المؤقت للغد
             }, timeUntilUpdate);
         }
 
-        async function performAutoUpdate() {
-            if (!autoUpdateSettings.url || !autoUpdateSettings.elementCode) {
+        function performScheduledUpdates() {
+            funds.forEach(fund => {
+                if (fund.autoUpdateSettings && fund.autoUpdateSettings.enabled) {
+                    performAutoUpdate(fund);
+                }
+            });
+        }
+
+        async function performAutoUpdate(fund) {
+            if (!fund.autoUpdateSettings || !fund.autoUpdateSettings.url || !fund.autoUpdateSettings.elementCode) {
                 return;
             }
             
@@ -2389,36 +2177,28 @@
                 const mockPrice = (Math.random() * 2 + 1).toFixed(4);
                 const today = new Date().toISOString().split('T')[0];
                 
-                const fund = getCurrentFund();
-                if (fund) {
-                    fund.price = mockPrice;
-                    
-                    // إضافة إلى سجل الأسعار
-                    const existing = fund.priceHistory.find(p => p.date === today);
-                    if (existing) {
-                        existing.price = mockPrice;
-                    } else {
-                        fund.priceHistory.push({ date: today, price: mockPrice });
-                    }
-                    
-                    saveData();
-                    renderAll();
-                    
-                    // تحديث وقت آخر تحديث
-                    autoUpdateSettings.lastUpdate = new Date().toISOString();
-                    localStorage.setItem('auto_update_settings', JSON.stringify(autoUpdateSettings));
-                    
-                    document.getElementById('last-auto-update').textContent = 
-                        `آخر تحديث: ${new Date().toLocaleString('ar-EG')}`;
-                    
-                    console.log('Auto update completed:', mockPrice);
+                fund.price = mockPrice;
+                
+                // إضافة إلى سجل الأسعار
+                const existing = fund.priceHistory.find(p => p.date === today);
+                if (existing) {
+                    existing.price = mockPrice;
+                } else {
+                    fund.priceHistory.push({ date: today, price: mockPrice });
                 }
+                
+                // تحديث وقت آخر تحديث
+                fund.autoUpdateSettings.lastUpdate = new Date().toISOString();
+                saveData();
+                renderAll();
+                
+                console.log(`Auto update completed for ${fund.code}:`, mockPrice);
             } catch (error) {
-                console.error('Auto update failed:', error);
+                console.error(`Auto update failed for ${fund.code}:`, error);
             }
         }
 
-        // ============ EXPORT PRICES ============
+        // ============ EXPORT FUNCTIONS ============
         function exportPricesPDF() {
             const fund = getCurrentFund();
             if (!fund) {
@@ -2430,11 +2210,11 @@
             
             let html = `
                 <div style="padding: 20px; font-family: 'Cairo', Arial; direction: rtl">
-                    <h2 style="text-align: center; color: #000B58; margin-bottom: 30px;">
+                    <h2 style="text-align: center; color: #434E78; margin-bottom: 30px;">
                         ${lang === 'ar' ? 'قاعدة بيانات الأسعار' : 'Prices Database'} - ${fund.name} (${fund.code})
                     </h2>
                     
-                    <div style="margin-bottom: 20px; background: #f5f7fa; padding: 15px; border-radius: 8px;">
+                    <div style="margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
                         <p><strong>${lang === 'ar' ? 'عدد الأسعار:' : 'Prices Count:'}</strong> ${sorted.length}</p>
                         <p><strong>${lang === 'ar' ? 'تاريخ التصدير:' : 'Export Date:'}</strong> ${new Date().toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}</p>
                         <p><strong>${lang === 'ar' ? 'أحدث سعر:' : 'Latest Price:'}</strong> ${fund.price}</p>
@@ -2442,7 +2222,7 @@
                     
                     <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
                         <thead>
-                            <tr style="background: #000B58; color: white;">
+                            <tr style="background: #434E78; color: white;">
                                 <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">${lang === 'ar' ? 'التاريخ' : 'Date'}</th>
                                 <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">${lang === 'ar' ? 'السعر' : 'Price'}</th>
                                 <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">${lang === 'ar' ? 'التغير %' : 'Change %'}</th>
@@ -2458,7 +2238,7 @@
                 const change = ((current - prev) / prev) * 100;
                 const statusIcon = change > 0.1 ? '↑' : change < -0.1 ? '↓' : '→';
                 const statusText = change > 0.1 ? lang === 'ar' ? 'ارتفاع' : 'Up' : change < -0.1 ? lang === 'ar' ? 'انخفاض' : 'Down' : lang === 'ar' ? 'مستقر' : 'Stable';
-                const changeColor = change >= 0 ? '#006A67' : '#D32F2F';
+                const changeColor = change >= 0 ? '#28a745' : '#dc3545';
                 
                 html += `
                     <tr style="border-bottom: 1px solid #eee;">
@@ -2474,7 +2254,7 @@
                         </tbody>
                     </table>
                     
-                    <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #000B58; font-size: 12px; color: #666; text-align: center;">
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #434E78; font-size: 12px; color: #666; text-align: center;">
                         <p>${lang === 'ar' ? 'تم إنشاء هذا التقرير بواسطة ان - دار استثمار' : 'Generated by InDar Tracker'}</p>
                         <p>${new Date().toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}</p>
                     </div>
@@ -2487,6 +2267,90 @@
             const opt = {
                 margin: 10,
                 filename: `prices-database-${fund.code}-${new Date().toISOString().split('T')[0]}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, backgroundColor: '#fff' },
+                jsPDF: { orientation: 'p', unit: 'mm', format: 'a4' }
+            };
+            
+            html2pdf().set(opt).from(element).save();
+        }
+
+        function exportGeneralInfoPDF() {
+            let html = `
+                <div style="padding: 20px; font-family: 'Cairo', Arial; direction: rtl">
+                    <h2 style="text-align: center; color: #434E78; margin-bottom: 30px;">
+                        ${lang === 'ar' ? 'تقرير معلومات عامة - جميع الصناديق' : 'General Information Report - All Funds'}
+                    </h2>
+                    
+                    <div style="margin-bottom: 30px; background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                        <h3 style="color: #434E78; margin-bottom: 15px;">${lang === 'ar' ? 'إجماليات الصناديق' : 'Funds Totals'}</h3>
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; text-align: center;">
+                            <div>
+                                <div style="font-size: 12px; color: #666;">${lang === 'ar' ? 'إجمالي المبلغ المدفوع' : 'Total Amount Paid'}</div>
+                                <div style="font-size: 20px; font-weight: bold; color: #434E78;">${document.getElementById('total-paid-all').textContent}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 12px; color: #666;">${lang === 'ar' ? 'إجمالي الربح المحتمل' : 'Total Potential Profit'}</div>
+                                <div style="font-size: 20px; font-weight: bold; color: #28a745;">${document.getElementById('total-profit-all').textContent}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 12px; color: #666;">${lang === 'ar' ? 'إجمالي الربح/الخسارة' : 'Total Profit/Loss'}</div>
+                                <div style="font-size: 20px; font-weight: bold; color: #17a2b8;">${document.getElementById('total-pl-all').textContent}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 12px; color: #666;">${lang === 'ar' ? 'إجمالي الوثائق' : 'Total Units'}</div>
+                                <div style="font-size: 20px; font-weight: bold; color: #607B8F;">${document.getElementById('total-units-all').textContent}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3 style="color: #434E78; margin-bottom: 15px;">${lang === 'ar' ? 'تفاصيل الصناديق' : 'Funds Details'}</h3>
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                        <thead>
+                            <tr style="background: #434E78; color: white;">
+                                <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">${lang === 'ar' ? 'اسم الصندوق' : 'Fund Name'}</th>
+                                <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">${lang === 'ar' ? 'الوثائق' : 'Units'}</th>
+                                <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">${lang === 'ar' ? 'إجمالي الاستثمار' : 'Total Investment'}</th>
+                                <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">${lang === 'ar' ? 'الربح بعد رسوم الاسترداد' : 'Profit After Redemption Fees'}</th>
+                                <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">${lang === 'ar' ? 'متوسط الشراء' : 'Avg Buy'}</th>
+                                <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">${lang === 'ar' ? 'القيمة الحالية' : 'Current Value'}</th>
+                                <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">${lang === 'ar' ? 'العائد %' : 'Return %'}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            const rows = document.querySelectorAll('#funds-details-table tr');
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length > 0) {
+                    html += '<tr>';
+                    cells.forEach((cell, index) => {
+                        const cellColor = index === cells.length - 1 ? 
+                            (parseFloat(cell.textContent) >= 0 ? '#28a745' : '#dc3545') : '#333';
+                        html += `<td style="padding: 10px; border: 1px solid #ddd; color: ${cellColor};">${cell.textContent}</td>`;
+                    });
+                    html += '</tr>';
+                }
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                    
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #434E78; font-size: 12px; color: #666; text-align: center;">
+                        <p>${lang === 'ar' ? 'تم إنشاء هذا التقرير بواسطة ان - دار استثمار' : 'Generated by InDar Tracker'}</p>
+                        <p>${new Date().toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}</p>
+                    </div>
+                </div>
+            `;
+            
+            const element = document.createElement('div');
+            element.innerHTML = html;
+            
+            const opt = {
+                margin: 10,
+                filename: `general-info-report-${new Date().toISOString().split('T')[0]}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, backgroundColor: '#fff' },
                 jsPDF: { orientation: 'p', unit: 'mm', format: 'a4' }
@@ -2515,6 +2379,16 @@
             downloadFile(JSON.stringify(data, null, 2), `prices-${fund.code}-${new Date().toISOString().split('T')[0]}.json`, 'application/json');
         }
 
+        function downloadFile(content, filename, type) {
+            const blob = new Blob([content], { type });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
         // ============ CHARTS ============
         function destroyChart(chartId) {
             if (chartInstances[chartId]) {
@@ -2532,6 +2406,14 @@
             const ctx = document.getElementById('priceChart');
             if (!ctx) return;
 
+            // استخدام الألوان الجديدة في الرسم البياني
+            const chartColors = {
+                line: getComputedStyle(document.documentElement).getPropertyValue('--chart-line').trim() || '#434E78',
+                area: getComputedStyle(document.documentElement).getPropertyValue('--chart-area').trim() || 'rgba(67, 78, 120, 0.1)',
+                point: getComputedStyle(document.documentElement).getPropertyValue('--chart-point').trim() || '#E97F4A',
+                grid: getComputedStyle(document.documentElement).getPropertyValue('--chart-grid').trim() || 'rgba(0, 0, 0, 0.1)'
+            };
+
             chartInstances['priceChart'] = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -2539,13 +2421,13 @@
                     datasets: [{
                         label: fund.name,
                         data: sorted.map(p => parseFloat(p.price)),
-                        borderColor: 'var(--primary)',
-                        backgroundColor: 'rgba(0, 11, 88, 0.1)',
+                        borderColor: chartColors.line,
+                        backgroundColor: chartColors.area,
                         borderWidth: 3,
                         fill: true,
                         tension: 0.4,
-                        pointBackgroundColor: 'var(--accent)',
-                        pointBorderColor: 'var(--primary)',
+                        pointBackgroundColor: chartColors.point,
+                        pointBorderColor: chartColors.line,
                         pointRadius: 5
                     }]
                 },
@@ -2565,10 +2447,15 @@
                             beginAtZero: false,
                             ticks: {
                                 color: theme === 'dark' ? '#e0e0e0' : '#666'
+                            },
+                            grid: {
+                                color: chartColors.grid
                             }
                         }, 
                         x: { 
-                            grid: { display: false },
+                            grid: { 
+                                display: false 
+                            },
                             ticks: {
                                 color: theme === 'dark' ? '#e0e0e0' : '#666'
                             }
@@ -2580,7 +2467,16 @@
 
         function createPortfolioChart() {
             destroyChart('portfolioChart');
-            const colorPalette = ['#000B58', '#003161', '#006A67', '#00509E', '#FDEB9E'];
+            
+            // استخدام الألوان الجديدة
+            const colorPalette = [
+                '#434E78', // الأزرق الداكن
+                '#607B8F', // الأزرق المتوسط
+                '#E97F4A', // البرتقالي
+                '#F7E396', // البيج الفاتح
+                '#28a745', // الأخضر
+                '#dc3545'  // الأحمر
+            ];
             
             const data = funds.map(f => {
                 const m = calculateMetrics(f);
@@ -2596,8 +2492,8 @@
                     labels: funds.map(f => f.code),
                     datasets: [{
                         data: data,
-                        backgroundColor: colorPalette,
-                        borderColor: theme === 'dark' ? '#14142E' : 'white',
+                        backgroundColor: colorPalette.slice(0, funds.length),
+                        borderColor: theme === 'dark' ? '#1E1E1E' : 'white',
                         borderWidth: 3
                     }]
                 },
@@ -2642,9 +2538,10 @@
                     datasets: [{
                         label: lang === 'ar' ? 'المعاملات الشهرية' : 'Monthly Transactions',
                         data: sortedMonths.map(m => monthlyData[m]),
-                        backgroundColor: '#000B58',
-                        borderColor: '#003161',
-                        borderWidth: 2
+                        backgroundColor: '#434E78',
+                        borderColor: '#607B8F',
+                        borderWidth: 2,
+                        borderRadius: 8
                     }]
                 },
                 options: { 
@@ -2683,8 +2580,9 @@
                     datasets: [{
                         label: lang === 'ar' ? 'العائد %' : 'Return %',
                         data: fundReturns,
-                        backgroundColor: fundReturns.map(r => r >= 0 ? '#006A67' : '#D32F2F'),
-                        borderWidth: 1
+                        backgroundColor: fundReturns.map(r => r >= 0 ? '#28a745' : '#dc3545'),
+                        borderWidth: 1,
+                        borderRadius: 8
                     }]
                 },
                 options: { 
@@ -2719,8 +2617,8 @@
 
             document.getElementById('stats-funds').textContent = funds.length;
             document.getElementById('stats-transactions').textContent = totalTx;
-            document.getElementById('stats-best').textContent = best.value === -999 ? '--' : `${best.code} (${best.value.toFixed(2)}%)`;
-            document.getElementById('stats-worst').textContent = worst.value === 999 ? '--' : `${worst.code} (${worst.value.toFixed(2)}%)`;
+            document.getElementById('stats-best').textContent = best.value === -999 ? '--' : `${best.code} (${formatDisplay(best.value)}%)`;
+            document.getElementById('stats-worst').textContent = worst.value === 999 ? '--' : `${worst.code} (${formatDisplay(worst.value)}%)`;
         }
 
         function updateAllCharts() {
@@ -2732,33 +2630,17 @@
         }
 
         // ============ EXPORT/IMPORT ============
-        function formatDisplay(num) {
-            if (num === null || num === undefined || isNaN(num)) return '0';
-            return num.toString();
-        }
-
-        function downloadFile(content, filename, type) {
-            const blob = new Blob([content], { type });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
         function exportJSON() {
             const data = { funds, timestamp: new Date().toISOString() };
             downloadFile(JSON.stringify(data, null, 2), `investment-backup-${new Date().toISOString().split('T')[0]}.json`, 'application/json');
         }
 
         function exportCSV() {
-            let csv = lang === 'ar' ? 'الصندوق,الكود,التاريخ,النوع,الوثائق,السعر,المبلغ,الرسوم\n' : 'Fund,Code,Date,Type,Units,Price,Amount,Fees\n';
+            let csv = lang === 'ar' ? 'الصندوق,الكود,التاريخ,النوع,الوثائق,السعر,المبلغ\n' : 'Fund,Code,Date,Type,Units,Price,Amount\n';
             funds.forEach(f => {
                 f.transactions.forEach(tx => {
                     const amount = parseFloat(tx.units) * parseFloat(tx.price);
-                    const fee = tx.type === 'buy' ? amount * (f.subscriptionFee / 100) : amount * (f.redemptionFee / 100);
-                    csv += `"${f.name}","${f.code}","${tx.date}","${tx.type === 'buy' ? labels[lang].buy : labels[lang].sell}","${tx.units}","${tx.price}","${amount}","${fee}"\n`;
+                    csv += `"${f.name}","${f.code}","${tx.date}","${tx.type === 'buy' ? labels[lang].buy : labels[lang].sell}","${tx.units}","${formatDisplay(tx.price, true)}","${formatCurrency(amount)}"\n`;
                 });
             });
             downloadFile(csv, `investment-backup-${new Date().toISOString().split('T')[0]}.csv`, 'text/csv');
@@ -2781,17 +2663,17 @@
     <style>
         body { font-family: Arial, sans-serif; direction: rtl; }
         .container { max-width: 800px; margin: 40px auto; }
-        .header { text-align: center; border-bottom: 3px solid #000B58; padding-bottom: 20px; margin-bottom: 30px; }
-        .header h1 { color: #000B58; margin: 0; }
-        .header p { color: #003161; margin: 5px 0; }
+        .header { text-align: center; border-bottom: 3px solid #434E78; padding-bottom: 20px; margin-bottom: 30px; }
+        .header h1 { color: #434E78; margin: 0; }
+        .header p { color: #607B8F; margin: 5px 0; }
         .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-        .metric { background: #f5f7fa; padding: 15px; border-radius: 8px; text-align: center; }
+        .metric { background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; }
         .metric-label { font-size: 12px; color: #666; }
-        .metric-value { font-size: 24px; font-weight: bold; color: #000B58; }
+        .metric-value { font-size: 24px; font-weight: bold; color: #434E78; }
         table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th { background: #000B58; color: white; padding: 12px; text-align: right; }
+        th { background: #434E78; color: white; padding: 12px; text-align: right; }
         td { padding: 10px; border-bottom: 1px solid #ddd; text-align: right; }
-        .section-title { font-size: 16px; font-weight: bold; color: #000B58; margin-top: 30px; margin-bottom: 10px; }
+        .section-title { font-size: 16px; font-weight: bold; color: #434E78; margin-top: 30px; margin-bottom: 10px; }
         .footer { text-align: center; margin-top: 40px; color: #999; font-size: 12px; }
     </style>
 </head>
@@ -2805,31 +2687,31 @@
         <div class="metrics">
             <div class="metric">
                 <div class="metric-label">${lang === 'ar' ? 'إجمالي الوثائق' : 'Total Units'}</div>
-                <div class="metric-value">${formatDisplay(m.units)}</div>
+                <div class="metric-value">${m.units}</div>
             </div>
             <div class="metric">
                 <div class="metric-label">${lang === 'ar' ? 'متوسط الشراء' : 'Avg Buy'}</div>
-                <div class="metric-value">${formatDisplay(m.avgPrice)}</div>
+                <div class="metric-value">${formatDisplay(m.avgPrice, true)}</div>
             </div>
             <div class="metric">
                 <div class="metric-label">${lang === 'ar' ? 'السعر الحالي' : 'Current Price'}</div>
-                <div class="metric-value">${formatDisplay(fund.price)}</div>
+                <div class="metric-value">${formatDisplay(fund.price, true)}</div>
             </div>
             <div class="metric">
                 <div class="metric-label">${lang === 'ar' ? 'القيمة الحالية' : 'Current Value'}</div>
-                <div class="metric-value">${formatDisplay(m.value)}</div>
+                <div class="metric-value">${formatCurrency(m.value)}</div>
             </div>
             <div class="metric">
                 <div class="metric-label">${lang === 'ar' ? 'إجمالي الاستثمار' : 'Total Invested'}</div>
-                <div class="metric-value">${formatDisplay(m.invested)}</div>
+                <div class="metric-value">${formatCurrency(m.invested)}</div>
             </div>
             <div class="metric">
                 <div class="metric-label">${lang === 'ar' ? 'الربح/الخسارة' : 'Profit/Loss'}</div>
-                <div class="metric-value" style="color: ${m.profit >= 0 ? '#006A67' : '#D32F2F'};">${formatDisplay(m.profit)}</div>
+                <div class="metric-value" style="color: ${m.profitAfterFees >= 0 ? '#28a745' : '#dc3545'};">${formatCurrency(m.profitAfterFees)}</div>
             </div>
             <div class="metric">
                 <div class="metric-label">${lang === 'ar' ? 'العائد %' : 'Return %'}</div>
-                <div class="metric-value" style="color: ${m.returnPct >= 0 ? '#006A67' : '#D32F2F'};">${formatDisplay(m.returnPct)}%</div>
+                <div class="metric-value" style="color: ${m.returnPct >= 0 ? '#28a745' : '#dc3545'};">${formatDisplay(m.returnPct)}%</div>
             </div>
             <div class="metric">
                 <div class="metric-label">${lang === 'ar' ? 'تاريخ الإنشاء' : 'Export Date'}</div>
@@ -2854,9 +2736,9 @@
                     return `<tr>
                         <td>${tx.date}</td>
                         <td>${tx.type === 'buy' ? labels[lang].buy : labels[lang].sell}</td>
-                        <td>${formatDisplay(tx.units)}</td>
-                        <td>${formatDisplay(tx.price)}</td>
-                        <td>${formatDisplay(amount)}</td>
+                        <td>${tx.units}</td>
+                        <td>${formatDisplay(tx.price, true)}</td>
+                        <td>${formatCurrency(amount)}</td>
                     </tr>`;
                 }).join('')}
             </tbody>
@@ -2954,7 +2836,8 @@
                         { date: '2025-11-24', price: '1.44' },
                         { date: '2025-11-26', price: '1.41' },
                         { date: '2025-11-28', price: '1.42' }
-                    ]
+                    ],
+                    autoUpdateSettings: {}
                 }];
                 currentFundId = '1';
                 saveData();
@@ -2975,6 +2858,7 @@
             updateGeneralInfo();
             updateBackupInfo();
             updateTranslations();
+            updateAutoUpdateFundSelector();
             if (currentFundId) {
                 updateAllCharts();
             }
