@@ -169,7 +169,7 @@
         .header {
             background: var(--surface);
             border-bottom: 3px solid var(--primary);
-            padding: 16px 24px;
+            padding: 13px 13px;
             box-shadow: 0 2px 8px rgba(2, 44, 67, 0.08);
             position: sticky;
             top: 0;
@@ -207,7 +207,6 @@
         }
 
         .fund-selector {
-            padding: 10px 12px;
             border: 2px solid var(--primary);
             border-radius: 8px;
             font-family: Cairo;
@@ -574,9 +573,7 @@
             padding-right: 12px;
         }
 
-        body[data-theme="dark"] select {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23FFD700' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-        }
+
     </style>
 </head>
 <body data-theme="light" data-lang="ar">
@@ -633,7 +630,7 @@
             <div class="header-content">
                 <div class="header-left">
                     <h1><i class="fas fa-chart-line"></i> <span data-ar="ان - دار استثمار" data-en="InDar Tracker">InDar Tracker</span></h1>
-                    <p id="current-fund-display" data-ar="اختر صندوق" data-en="Select a fund">اختر صندوق</p>
+                    <p id="current-fund-display">اختر صندوق</p>
                 </div>
                 <div class="header-controls">
                     <select id="fund-select" class="fund-selector"></select>
