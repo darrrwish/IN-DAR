@@ -89,6 +89,7 @@
             color: var(--on-background);
             transition: all 0.4s ease;
             line-height: 1.6;
+            font-family: 'Cairo', sans-serif;
         }
 
         /* Sidebar Navigation - Icons Only */
@@ -209,12 +210,13 @@
         .fund-selector {
             border: 2px solid var(--primary);
             border-radius: 8px;
-            font-family: Cairo;
+            font-family: 'Cairo', sans-serif;
             font-size: 13px;
             min-width: 200px;
             background: var(--surface);
             color: var(--on-surface);
             cursor: pointer;
+            padding: 1px;
         }
 
         /* Content Area */
@@ -372,17 +374,17 @@
         }
 
         /* الحفاظ على اتجاه RTL بغض النظر عن اللغة */
-[data-lang="ar"] table,
-[data-lang="en"] table {
-    direction: rtl !important;
-}
+        [data-lang="ar"] table,
+        [data-lang="en"] table {
+            direction: rtl !important;
+        }
 
-[data-lang="ar"] th,
-[data-lang="ar"] td,
-[data-lang="en"] th,
-[data-lang="en"] td {
-    text-align: right !important;
-}
+        [data-lang="ar"] th,
+        [data-lang="ar"] td,
+        [data-lang="en"] th,
+        [data-lang="en"] td {
+            text-align: right !important;
+        }
 
         .positive {
             color: var(--success);
@@ -405,6 +407,7 @@
             color: var(--on-surface);
             font-size: 13px;
             display: block;
+            font-family: 'Cairo', sans-serif;
         }
 
         .form-group input,
@@ -573,7 +576,6 @@
             padding-right: 12px;
         }
 
-
     </style>
 </head>
 <body data-theme="light" data-lang="ar">
@@ -629,7 +631,7 @@
         <div class="header">
             <div class="header-content">
                 <div class="header-left">
-                    <h1><i class="fas fa-chart-line"></i> <span data-ar="ان - دار استثمار" data-en="InDar Tracker">InDar Tracker</span></h1>
+                    <h1><i class="fas fa-chart-line"></i> <span data-ar="ان - دار " data-en="InDar">InDar Tracker</span></h1>
                     <p id="current-fund-display">اختر صندوق</p>
                 </div>
                 <div class="header-controls">
@@ -770,6 +772,7 @@
                             <thead>
                                 <tr>
                                     <th><i class="fas fa-calendar"></i> <span data-ar="التاريخ" data-en="Date">التاريخ</span></th>
+                                    <th><i class="fas fa-clock"></i> <span data-ar="المدة" data-en="Duration">المدة</span></th>
                                     <th><i class="fas fa-exchange-alt"></i> <span data-ar="النوع" data-en="Type">النوع</span></th>
                                     <th><i class="fas fa-cubes"></i> <span data-ar="الوثائق" data-en="Units">الوثائق</span></th>
                                     <th><i class="fas fa-tag"></i> <span data-ar="السعر" data-en="Price">السعر</span></th>
@@ -907,12 +910,16 @@
                         <i class="fas fa-calculator"></i>
                         <span data-ar="صافي الربح بعد الرسوم" data-en="Net Profit After Fees">صافي الربح بعد الرسوم</span>
                     </div>
-                    <div class="grid-2">
+                    <div class="grid-3">
                         <div class="metric-box">
+                            <div class="metric-label"><i class="fas fa-money-bill"></i> <span data-ar="إجمالي المبلغ المدفوع" data-en="Total Amount Paid">إجمالي المبلغ المدفوع</span></div>
+                            <div class="metric-value" id="total-amount-paid">0</div>
+                        </div>
+                        <div class="metric-box" style="background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%);">
                             <div class="metric-label"><i class="fas fa-coins"></i> <span data-ar="إجمالي بيع الوثائق بسعر اليوم" data-en="Total Sale at Current Price">إجمالي بيع الوثائق بسعر اليوم</span></div>
                             <div class="metric-value" id="total-sale-current">0</div>
                         </div>
-                        <div class="metric-box" style="background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%);">
+                        <div class="metric-box" style="background: linear-gradient(135deg, var(--tertiary) 0%, var(--tertiary-dark) 100%);">
                             <div class="metric-label"><i class="fas fa-percent"></i> <span data-ar="صافي الربح بعد رسوم الاسترداد" data-en="Net Profit After Redemption Fees">صافي الربح بعد رسوم الاسترداد</span></div>
                             <div class="metric-value" id="net-after-redemption-fees">0</div>
                         </div>
@@ -1488,6 +1495,28 @@
             return formatDisplay(num, false);
         }
 
+        // ============ حساب المدة ============
+        function calculateDuration(startDate) {
+            const start = new Date(startDate);
+            const today = new Date();
+            const diffTime = Math.abs(today - start);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < 30) {
+                return `${diffDays} ${lang === 'ar' ? 'يوم' : 'days'}`;
+            } else if (diffDays < 365) {
+                const months = Math.floor(diffDays / 30);
+                return `${months} ${lang === 'ar' ? 'شهر' : 'months'}`;
+            } else {
+                const years = Math.floor(diffDays / 365);
+                const remainingMonths = Math.floor((diffDays % 365) / 30);
+                if (remainingMonths > 0) {
+                    return `${years} ${lang === 'ar' ? 'سنة' : 'years'} ${lang === 'ar' ? 'و' : 'and'} ${remainingMonths} ${lang === 'ar' ? 'شهر' : 'months'}`;
+                }
+                return `${years} ${lang === 'ar' ? 'سنة' : 'years'}`;
+            }
+        }
+
         // ============ TRANSACTIONS ============
         function addTransaction() {
             const fund = getCurrentFund();
@@ -1579,12 +1608,14 @@
 
             fund.transactions.forEach((tx, idx) => {
                 const amount = parseFloat(tx.units) * parseFloat(tx.price);
+                const duration = calculateDuration(tx.date);
                 
                 const tr = document.createElement('tr');
                 const typeText = tx.type === 'buy' ? labels[lang].buy : labels[lang].sell;
                 const dateStr = new Date(tx.date).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US');
                 tr.innerHTML = `
                     <td>${dateStr}</td>
+                    <td>${duration}</td>
                     <td><span class="badge ${tx.type}">${typeText}</span></td>
                     <td>${tx.units}</td>
                     <td class="exact-number">${formatDisplay(tx.price, true)}</td>
@@ -1818,6 +1849,10 @@
             document.getElementById('total-sale-current').textContent = formatCurrency(analytics.totalSaleCurrent);
             document.getElementById('avg-unit-price').textContent = formatDisplay(analytics.avgUnitPrice, true);
             document.getElementById('net-after-all-fees').textContent = formatCurrency(analytics.netAfterRedemption);
+            
+            // تحديث إجمالي المبلغ المدفوع
+            const m = calculateMetrics(fund);
+            document.getElementById('total-amount-paid').textContent = formatCurrency(m.invested);
             
             // تحديث جدول تأثير العمليات
             updateProfitImpactTable(analytics.transactionImpact);
@@ -2070,205 +2105,166 @@
             }, 5000);
         }
 
-       async function testAutoUpdate() {
-    const fundId = document.getElementById('auto-update-fund-select').value;
-    if (!fundId) {
-        showAutoUpdateStatus(lang === 'ar' ? 'الرجاء اختيار صندوق' : 'Please select a fund', 'error');
-        return;
-    }
+        async function testAutoUpdate() {
+            const fundId = document.getElementById('auto-update-fund-select').value;
+            if (!fundId) {
+                showAutoUpdateStatus(lang === 'ar' ? 'الرجاء اختيار صندوق' : 'Please select a fund', 'error');
+                return;
+            }
 
-    const url = document.getElementById('auto-update-url').value;
-    const elementCode = document.getElementById('element-code').value;
-    
-    if (!url || !elementCode) {
-        showAutoUpdateStatus(lang === 'ar' ? 'الرجاء إدخال الرابط وكود العنصر' : 'Please enter URL and element code', 'error');
-        return;
-    }
-    
-    showAutoUpdateStatus(lang === 'ar' ? 'جاري جلب البيانات...' : 'Fetching data...', 'info');
-    
-    try {
-        // طرق مختلفة لجلب البيانات
-        let price = await fetchPriceWithMultipleMethods(url, elementCode);
-        
-        if (price) {
-            document.getElementById('price-new').value = price;
-            showAutoUpdateStatus(`${lang === 'ar' ? 'تم العثور على السعر:' : 'Found price:'} ${price}`, 'success');
+            const url = document.getElementById('auto-update-url').value;
+            const elementCode = document.getElementById('element-code').value;
             
-            // تحديث السعر الحالي للصندوق
-            const fund = funds.find(f => f.id === fundId);
-            if (fund) {
-                const today = new Date().toISOString().split('T')[0];
-                fund.price = price;
+            if (!url || !elementCode) {
+                showAutoUpdateStatus(lang === 'ar' ? 'الرجاء إدخال الرابط وكود العنصر' : 'Please enter URL and element code', 'error');
+                return;
+            }
+            
+            showAutoUpdateStatus(lang === 'ar' ? 'جاري جلب البيانات...' : 'Fetching data...', 'info');
+            
+            try {
+                // طرق مختلفة لجلب البيانات
+                let price = await fetchPriceWithMultipleMethods(url, elementCode);
                 
-                // إضافة إلى سجل الأسعار
-                const existing = fund.priceHistory.find(p => p.date === today);
-                if (existing) {
-                    existing.price = price;
+                if (price) {
+                    document.getElementById('price-new').value = price;
+                    showAutoUpdateStatus(`${lang === 'ar' ? 'تم العثور على السعر:' : 'Found price:'} ${price}`, 'success');
+                    
+                    // تحديث السعر الحالي للصندوق
+                    const fund = funds.find(f => f.id === fundId);
+                    if (fund) {
+                        const today = new Date().toISOString().split('T')[0];
+                        fund.price = price;
+                        
+                        // إضافة إلى سجل الأسعار
+                        const existing = fund.priceHistory.find(p => p.date === today);
+                        if (existing) {
+                            existing.price = price;
+                        } else {
+                            fund.priceHistory.push({ date: today, price });
+                        }
+                        
+                        saveData();
+                        renderAll();
+                    }
                 } else {
-                    fund.priceHistory.push({ date: today, price });
+                    showAutoUpdateStatus(lang === 'ar' ? 'لم يتم العثور على السعر. جرب كود عنصر مختلف.' : 'Price not found. Try different element code.', 'error');
                 }
+            } catch (error) {
+                console.error('Error fetching price:', error);
+                showAutoUpdateStatus(`${lang === 'ar' ? 'خطأ في جلب البيانات:' : 'Error fetching data:'} ${error.message}`, 'error');
+            }
+        }
+
+        async function fetchPriceWithMultipleMethods(url, elementCode) {
+            let price = null;
+            
+            // الطريقة 1: استخدام CORS Anywhere (يحتاج تفعيل)
+            try {
+                const corsProxy = 'https://api.allorigins.win/raw?url=';
+                const response = await fetch(corsProxy + encodeURIComponent(url), {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                    }
+                });
                 
-                saveData();
-                renderAll();
+                if (response.ok) {
+                    const html = await response.text();
+                    price = extractPriceFromHTML(html, elementCode);
+                    if (price) return price;
+                }
+            } catch (error) {
+                console.log('Method 1 failed:', error.message);
             }
-        } else {
-            showAutoUpdateStatus(lang === 'ar' ? 'لم يتم العثور على السعر. جرب كود عنصر مختلف.' : 'Price not found. Try different element code.', 'error');
+            
+            // الطريقة 2: استخدام ProxyServer
+            try {
+                const proxyUrl = 'https://corsproxy.io/?';
+                const response = await fetch(proxyUrl + encodeURIComponent(url), {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                    }
+                });
+                
+                if (response.ok) {
+                    const html = await response.text();
+                    price = extractPriceFromHTML(html, elementCode);
+                    if (price) return price;
+                }
+            } catch (error) {
+                console.log('Method 2 failed:', error.message);
+            }
+            
+            // الطريقة 3: استخدام jsonp (للمواقع التي تدعمه)
+            try {
+                // بعض المواقع تقدم بيانات عبر JSON
+                const jsonUrl = url.replace('/fundpage', '/api/fund') + '/price';
+                const proxy = 'https://api.allorigins.win/get?url=';
+                const response = await fetch(proxy + encodeURIComponent(jsonUrl));
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.contents) {
+                        const jsonData = JSON.parse(data.contents);
+                        if (jsonData.price) return jsonData.price;
+                    }
+                }
+            } catch (error) {
+                console.log('Method 3 failed:', error.message);
+            }
+            
+            return price;
         }
-    } catch (error) {
-        console.error('Error fetching price:', error);
-        showAutoUpdateStatus(`${lang === 'ar' ? 'خطأ في جلب البيانات:' : 'Error fetching data:'} ${error.message}`, 'error');
-    }
-}
 
-async function fetchPriceWithMultipleMethods(url, elementCode) {
-    let price = null;
-    
-    // الطريقة 1: استخدام CORS Anywhere (يحتاج تفعيل)
-    try {
-        const corsProxy = 'https://api.allorigins.win/raw?url=';
-        const response = await fetch(corsProxy + encodeURIComponent(url), {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
-        });
-        
-        if (response.ok) {
-            const html = await response.text();
-            price = extractPriceFromHTML(html, elementCode);
-            if (price) return price;
-        }
-    } catch (error) {
-        console.log('Method 1 failed:', error.message);
-    }
-    
-    // الطريقة 2: استخدام ProxyServer
-    try {
-        const proxyUrl = 'https://corsproxy.io/?';
-        const response = await fetch(proxyUrl + encodeURIComponent(url), {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
-        });
-        
-        if (response.ok) {
-            const html = await response.text();
-            price = extractPriceFromHTML(html, elementCode);
-            if (price) return price;
-        }
-    } catch (error) {
-        console.log('Method 2 failed:', error.message);
-    }
-    
-    // الطريقة 3: استخدام jsonp (للمواقع التي تدعمه)
-    try {
-        // بعض المواقع تقدم بيانات عبر JSON
-        const jsonUrl = url.replace('/fundpage', '/api/fund') + '/price';
-        const proxy = 'https://api.allorigins.win/get?url=';
-        const response = await fetch(proxy + encodeURIComponent(jsonUrl));
-        
-        if (response.ok) {
-            const data = await response.json();
-            if (data.contents) {
-                const jsonData = JSON.parse(data.contents);
-                if (jsonData.price) return jsonData.price;
-            }
-        }
-    } catch (error) {
-        console.log('Method 3 failed:', error.message);
-    }
-    
-    return price;
-}
-
-function extractPriceFromHTML(html, elementCode) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-    
-    // محاولة العثور على السعر بعدة طرق
-    let priceElement = null;
-    
-    // 1. البحث باستخدام الكود المحدد
-    if (elementCode) {
-        priceElement = doc.querySelector(elementCode);
-    }
-    
-    // 2. البحث عن أي عنصر يحتوي على "EGP" أو "جنية"
-    if (!priceElement) {
-        const elements = doc.querySelectorAll('*');
-        for (let el of elements) {
-            const text = el.textContent.trim();
-            if ((text.includes('EGP') || text.includes('جنية') || text.includes('جنيه')) && 
-                text.match(/\d+\.?\d*/)) {
-                priceElement = el;
-                break;
-            }
-        }
-    }
-    
-    // 3. البحث عن عناصر بها أرقام فقط
-    if (!priceElement) {
-        const potentialElements = doc.querySelectorAll('.price, .value, .amount, .fund-price, [class*="price"], [id*="price"]');
-        for (let el of potentialElements) {
-            const text = el.textContent.trim();
-            if (text.match(/^\d+\.?\d*$/)) {
-                priceElement = el;
-                break;
-            }
-        }
-    }
-    
-    if (priceElement) {
-        const priceText = priceElement.textContent.trim();
-        // استخراج الرقم فقط (يمكن أن يكون 1.448 أو 1,448 إلخ)
-        const priceMatch = priceText.match(/(\d+[.,]\d+|\d+)/);
-        if (priceMatch) {
-            // استبدال الفاصلة بالنقطة إذا كانت موجودة
-            return priceMatch[0].replace(',', '.');
-        }
-    }
-    
-    return null;
-}
-
-// تحديث دالة performAutoUpdate أيضًا
-async function performAutoUpdate(fund) {
-    if (!fund.autoUpdateSettings || !fund.autoUpdateSettings.url || !fund.autoUpdateSettings.elementCode) {
-        return;
-    }
-    
-    try {
-        console.log(`Performing auto update for ${fund.code}...`);
-        
-        const url = fund.autoUpdateSettings.url;
-        const elementCode = fund.autoUpdateSettings.elementCode;
-        
-        const price = await fetchPriceWithMultipleMethods(url, elementCode);
-        
-        if (price) {
-            const today = new Date().toISOString().split('T')[0];
+        function extractPriceFromHTML(html, elementCode) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
             
-            fund.price = price;
+            // محاولة العثور على السعر بعدة طرق
+            let priceElement = null;
             
-            const existing = fund.priceHistory.find(p => p.date === today);
-            if (existing) {
-                existing.price = price;
-            } else {
-                fund.priceHistory.push({ date: today, price });
+            // 1. البحث باستخدام الكود المحدد
+            if (elementCode) {
+                priceElement = doc.querySelector(elementCode);
             }
             
-            fund.autoUpdateSettings.lastUpdate = new Date().toISOString();
-            saveData();
-            renderAll();
+            // 2. البحث عن أي عنصر يحتوي على "EGP" أو "جنية"
+            if (!priceElement) {
+                const elements = doc.querySelectorAll('*');
+                for (let el of elements) {
+                    const text = el.textContent.trim();
+                    if ((text.includes('EGP') || text.includes('جنية') || text.includes('جنيه')) && 
+                        text.match(/\d+\.?\d*/)) {
+                        priceElement = el;
+                        break;
+                    }
+                }
+            }
             
-            console.log(`Auto update completed for ${fund.code}: ${price}`);
-        } else {
-            console.log(`Could not fetch price for ${fund.code}`);
+            // 3. البحث عن عناصر بها أرقام فقط
+            if (!priceElement) {
+                const potentialElements = doc.querySelectorAll('.price, .value, .amount, .fund-price, [class*="price"], [id*="price"]');
+                for (let el of potentialElements) {
+                    const text = el.textContent.trim();
+                    if (text.match(/^\d+\.?\d*$/)) {
+                        priceElement = el;
+                        break;
+                    }
+                }
+            }
+            
+            if (priceElement) {
+                const priceText = priceElement.textContent.trim();
+                // استخراج الرقم فقط (يمكن أن يكون 1.448 أو 1,448 إلخ)
+                const priceMatch = priceText.match(/(\d+[.,]\d+|\d+)/);
+                if (priceMatch) {
+                    // استبدال الفاصلة بالنقطة إذا كانت موجودة
+                    return priceMatch[0].replace(',', '.');
+                }
+            }
+            
+            return null;
         }
-    } catch (error) {
-        console.error(`Auto update failed for ${fund.code}:`, error);
-    }
-}
 
         function checkDailyUpdate() {
             const today = new Date().toISOString().split('T')[0];
@@ -2386,24 +2382,44 @@ async function performAutoUpdate(fund) {
             const sorted = [...fund.priceHistory].sort((a, b) => new Date(b.date) - new Date(a.date));
             
             let html = `
-                <div style="padding: 20px; font-family: 'Cairo', Arial; direction: rtl">
-                    <h2 style="text-align: center; color: #022C43; margin-bottom: 30px;">
-                        ${lang === 'ar' ? 'قاعدة بيانات الأسعار' : 'Prices Database'} - ${fund.name} (${fund.code})
-                    </h2>
-                    
-                    <div style="margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                        <p><strong>${lang === 'ar' ? 'عدد الأسعار:' : 'Prices Count:'}</strong> ${sorted.length}</p>
-                        <p><strong>${lang === 'ar' ? 'تاريخ التصدير:' : 'Export Date:'}</strong> ${new Date().toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}</p>
-                        <p><strong>${lang === 'ar' ? 'أحدث سعر:' : 'Latest Price:'}</strong> ${fund.price}</p>
+                <div style="padding: 20px; font-family: 'Cairo', Arial, sans-serif; direction: rtl;">
+                    <div style="text-align: center; border-bottom: 3px solid #022C43; padding-bottom: 20px; margin-bottom: 30px;">
+                        <h1 style="color: #022C43; margin: 0;">
+                            ${lang === 'ar' ? 'قاعدة بيانات الأسعار' : 'Prices Database'}
+                        </h1>
+                        <h2 style="color: #064566; margin: 10px 0;">
+                            ${fund.name} (${fund.code})
+                        </h2>
                     </div>
                     
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                    <div style="margin-bottom: 25px; background: #f8f9fa; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 14px; color: #666; margin-bottom: 5px;">${lang === 'ar' ? 'عدد الأسعار' : 'Prices Count'}</div>
+                                <div style="font-size: 24px; font-weight: bold; color: #022C43;">${sorted.length}</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 14px; color: #666; margin-bottom: 5px;">${lang === 'ar' ? 'أحدث سعر' : 'Latest Price'}</div>
+                                <div style="font-size: 24px; font-weight: bold; color: #28a745;">${fund.price}</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 14px; color: #666; margin-bottom: 5px;">${lang === 'ar' ? 'تاريخ التصدير' : 'Export Date'}</div>
+                                <div style="font-size: 16px; color: #115173; font-weight: 600;">${new Date().toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US')}</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 14px; color: #666; margin-bottom: 5px;">${lang === 'ar' ? 'وقت التصدير' : 'Export Time'}</div>
+                                <div style="font-size: 16px; color: #115173; font-weight: 600;">${new Date().toLocaleTimeString(lang === 'ar' ? 'ar-EG' : 'en-US')}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
                         <thead>
-                            <tr style="background: #022C43; color: white;">
-                                <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">${lang === 'ar' ? 'التاريخ' : 'Date'}</th>
-                                <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">${lang === 'ar' ? 'السعر' : 'Price'}</th>
-                                <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">${lang === 'ar' ? 'التغير %' : 'Change %'}</th>
-                                <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">${lang === 'ar' ? 'الحالة' : 'Status'}</th>
+                            <tr style="background: linear-gradient(135deg, #022C43 0%, #053F5E 100%); color: white;">
+                                <th style="padding: 15px; border: 1px solid #0A5A85; text-align: right; font-weight: 600; font-size: 14px;">${lang === 'ar' ? 'التاريخ' : 'Date'}</th>
+                                <th style="padding: 15px; border: 1px solid #0A5A85; text-align: right; font-weight: 600; font-size: 14px;">${lang === 'ar' ? 'السعر' : 'Price'}</th>
+                                <th style="padding: 15px; border: 1px solid #0A5A85; text-align: right; font-weight: 600; font-size: 14px;">${lang === 'ar' ? 'التغير %' : 'Change %'}</th>
+                                <th style="padding: 15px; border: 1px solid #0A5A85; text-align: right; font-weight: 600; font-size: 14px;">${lang === 'ar' ? 'الحالة' : 'Status'}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -2416,13 +2432,16 @@ async function performAutoUpdate(fund) {
                 const statusIcon = change > 0.1 ? '↑' : change < -0.1 ? '↓' : '→';
                 const statusText = change > 0.1 ? lang === 'ar' ? 'ارتفاع' : 'Up' : change < -0.1 ? lang === 'ar' ? 'انخفاض' : 'Down' : lang === 'ar' ? 'مستقر' : 'Stable';
                 const changeColor = change >= 0 ? '#28a745' : '#dc3545';
+                const rowBg = idx % 2 === 0 ? '#FFFFFF' : '#F8FAFC';
                 
                 html += `
-                    <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 10px; border: 1px solid #ddd;">${entry.date}</td>
-                        <td style="padding: 10px; border: 1px solid #ddd; font-family: 'Courier New', monospace;">${entry.price}</td>
-                        <td style="padding: 10px; border: 1px solid #ddd; color: ${changeColor}; font-family: 'Courier New', monospace;">${change >= 0 ? '+' : ''}${change.toFixed(4)}%</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">${statusIcon} ${statusText}</td>
+                    <tr style="background: ${rowBg};">
+                        <td style="padding: 12px 15px; border: 1px solid #E1E8F0; font-size: 13px; color: #022C43; font-weight: 500;">${entry.date}</td>
+                        <td style="padding: 12px 15px; border: 1px solid #E1E8F0; font-size: 13px; color: #064566; font-family: 'Courier New', monospace; font-weight: 600;">${entry.price}</td>
+                        <td style="padding: 12px 15px; border: 1px solid #E1E8F0; font-size: 13px; color: ${changeColor}; font-family: 'Courier New', monospace; font-weight: 600;">${change >= 0 ? '+' : ''}${change.toFixed(4)}%</td>
+                        <td style="padding: 12px 15px; border: 1px solid #E1E8F0; font-size: 13px; color: ${changeColor}; font-weight: 600;">
+                            <span style="display: inline-block; padding: 4px 10px; background: ${changeColor}15; border-radius: 4px;">${statusIcon} ${statusText}</span>
+                        </td>
                     </tr>
                 `;
             });
@@ -2431,9 +2450,13 @@ async function performAutoUpdate(fund) {
                         </tbody>
                     </table>
                     
-                    <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #022C43; font-size: 12px; color: #666; text-align: center;">
-                        <p>${lang === 'ar' ? 'تم إنشاء هذا التقرير بواسطة ان - دار استثمار' : 'Generated by InDar Tracker'}</p>
-                        <p>${new Date().toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}</p>
+                    <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #022C43; text-align: center;">
+                        <p style="font-size: 12px; color: #666; margin: 5px 0;">
+                            ${lang === 'ar' ? 'تم إنشاء هذا التقرير بواسطة ان - دار استثمار' : 'Generated by InDar Tracker'}
+                        </p>
+                        <p style="font-size: 11px; color: #999; margin: 5px 0;">
+                            ${new Date().toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
+                        </p>
                     </div>
                 </div>
             `;
@@ -2464,59 +2487,86 @@ async function performAutoUpdate(fund) {
 
         function exportGeneralInfoPDF() {
             let html = `
-                <div style="padding: 20px; font-family: 'Cairo', Arial; direction: rtl">
-                    <h2 style="text-align: center; color: #022C43; margin-bottom: 30px;">
-                        ${lang === 'ar' ? 'تقرير معلومات عامة - جميع الصناديق' : 'General Information Report - All Funds'}
-                    </h2>
+                <div style="padding: 25px; font-family: 'Cairo', Arial, sans-serif; direction: rtl;">
+                    <div style="text-align: center; border-bottom: 3px solid #022C43; padding-bottom: 25px; margin-bottom: 30px;">
+                        <h1 style="color: #022C43; margin: 0; font-size: 28px;">
+                            ${lang === 'ar' ? 'تقرير معلومات عامة' : 'General Information Report'}
+                        </h1>
+                        <h2 style="color: #064566; margin: 10px 0; font-size: 20px;">
+                            ${lang === 'ar' ? 'جميع الصناديق' : 'All Funds'}
+                        </h2>
+                        <p style="color: #115173; font-size: 14px;">
+                            ${new Date().toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US')}
+                        </p>
+                    </div>
                     
-                    <div style="margin-bottom: 30px; background: #f8f9fa; padding: 20px; border-radius: 8px;">
-                        <h3 style="color: #022C43; margin-bottom: 15px;">${lang === 'ar' ? 'إجماليات الصناديق' : 'Funds Totals'}</h3>
-                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; text-align: center;">
-                            <div>
-                                <div style="font-size: 12px; color: #666;">${lang === 'ar' ? 'إجمالي المبلغ المدفوع' : 'Total Amount Paid'}</div>
-                                <div style="font-size: 20px; font-weight: bold; color: #022C43;">${document.getElementById('total-paid-all').textContent}</div>
+                    <div style="margin-bottom: 30px; background: linear-gradient(135deg, #F8FAFC 0%, #EFF3F6 100%); padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                        <h3 style="color: #022C43; margin-bottom: 20px; font-size: 18px; padding-bottom: 10px; border-bottom: 2px solid #022C43;">
+                            ${lang === 'ar' ? 'إجماليات الصناديق' : 'Funds Totals'}
+                        </h3>
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; text-align: center;">
+                            <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                                <div style="font-size: 13px; color: #666; margin-bottom: 8px;">${lang === 'ar' ? 'إجمالي المبلغ المدفوع' : 'Total Amount Paid'}</div>
+                                <div style="font-size: 24px; font-weight: bold; color: #022C43;">${document.getElementById('total-paid-all').textContent}</div>
                             </div>
-                            <div>
-                                <div style="font-size: 12px; color: #666;">${lang === 'ar' ? 'إجمالي الربح المحتمل' : 'Total Potential Profit'}</div>
-                                <div style="font-size: 20px; font-weight: bold; color: #28a745;">${document.getElementById('total-profit-all').textContent}</div>
+                            <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                                <div style="font-size: 13px; color: #666; margin-bottom: 8px;">${lang === 'ar' ? 'إجمالي الربح المحتمل' : 'Total Potential Profit'}</div>
+                                <div style="font-size: 24px; font-weight: bold; color: #28a745;">${document.getElementById('total-profit-all').textContent}</div>
                             </div>
-                            <div>
-                                <div style="font-size: 12px; color: #666;">${lang === 'ar' ? 'إجمالي الربح/الخسارة' : 'Total Profit/Loss'}</div>
-                                <div style="font-size: 20px; font-weight: bold; color: #17a2b8;">${document.getElementById('total-pl-all').textContent}</div>
+                            <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                                <div style="font-size: 13px; color: #666; margin-bottom: 8px;">${lang === 'ar' ? 'إجمالي الربح/الخسارة' : 'Total Profit/Loss'}</div>
+                                <div style="font-size: 24px; font-weight: bold; color: #17a2b8;">${document.getElementById('total-pl-all').textContent}</div>
                             </div>
-                            <div>
-                                <div style="font-size: 12px; color: #666;">${lang === 'ar' ? 'إجمالي الوثائق' : 'Total Units'}</div>
-                                <div style="font-size: 20px; font-weight: bold; color: #115173;">${document.getElementById('total-units-all').textContent}</div>
+                            <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                                <div style="font-size: 13px; color: #666; margin-bottom: 8px;">${lang === 'ar' ? 'إجمالي الوثائق' : 'Total Units'}</div>
+                                <div style="font-size: 24px; font-weight: bold; color: #115173;">${document.getElementById('total-units-all').textContent}</div>
                             </div>
                         </div>
                     </div>
                     
-                    <h3 style="color: #022C43; margin-bottom: 15px;">${lang === 'ar' ? 'تفاصيل الصناديق' : 'Funds Details'}</h3>
-                    <div style="overflow-x: auto;">
-                        <table style="width: 100%; border-collapse: collapse; margin-top: 20px; min-width: 1200px;">
+                    <h3 style="color: #022C43; margin-bottom: 15px; font-size: 18px; padding-bottom: 10px; border-bottom: 2px solid #022C43;">
+                        ${lang === 'ar' ? 'تفاصيل الصناديق' : 'Funds Details'}
+                    </h3>
+                    <div style="overflow-x: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-radius: 10px;">
+                        <table style="width: 100%; border-collapse: collapse; min-width: 1200px; background: white;">
                             <thead>
-                                <tr style="background: #022C43; color: white;">
-                                    <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">${lang === 'ar' ? 'اسم الصندوق' : 'Fund Name'}</th>
-                                    <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">${lang === 'ar' ? 'الوثائق' : 'Units'}</th>
-                                    <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">${lang === 'ar' ? 'إجمالي الاستثمار' : 'Total Investment'}</th>
-                                    <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">${lang === 'ar' ? 'الربح بعد رسوم الاسترداد' : 'Profit After Redemption Fees'}</th>
-                                    <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">${lang === 'ar' ? 'متوسط الشراء' : 'Avg Buy'}</th>
-                                    <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">${lang === 'ar' ? 'القيمة الحالية' : 'Current Value'}</th>
-                                    <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">${lang === 'ar' ? 'العائد %' : 'Return %'}</th>
+                                <tr style="background: linear-gradient(135deg, #022C43 0%, #053F5E 100%); color: white;">
+                                    <th style="padding: 15px; border: 1px solid #0A5A85; text-align: right; font-weight: 600; font-size: 14px;">${lang === 'ar' ? 'اسم الصندوق' : 'Fund Name'}</th>
+                                    <th style="padding: 15px; border: 1px solid #0A5A85; text-align: right; font-weight: 600; font-size: 14px;">${lang === 'ar' ? 'الوثائق' : 'Units'}</th>
+                                    <th style="padding: 15px; border: 1px solid #0A5A85; text-align: right; font-weight: 600; font-size: 14px;">${lang === 'ar' ? 'إجمالي الاستثمار' : 'Total Investment'}</th>
+                                    <th style="padding: 15px; border: 1px solid #0A5A85; text-align: right; font-weight: 600; font-size: 14px;">${lang === 'ar' ? 'الربح بعد رسوم الاسترداد' : 'Profit After Redemption Fees'}</th>
+                                    <th style="padding: 15px; border: 1px solid #0A5A85; text-align: right; font-weight: 600; font-size: 14px;">${lang === 'ar' ? 'متوسط الشراء' : 'Avg Buy'}</th>
+                                    <th style="padding: 15px; border: 1px solid #0A5A85; text-align: right; font-weight: 600; font-size: 14px;">${lang === 'ar' ? 'القيمة الحالية' : 'Current Value'}</th>
+                                    <th style="padding: 15px; border: 1px solid #0A5A85; text-align: right; font-weight: 600; font-size: 14px;">${lang === 'ar' ? 'العائد %' : 'Return %'}</th>
                                 </tr>
                             </thead>
                             <tbody>
             `;
             
             const rows = document.querySelectorAll('#funds-details-table tr');
-            rows.forEach(row => {
+            rows.forEach((row, index) => {
                 const cells = row.querySelectorAll('td');
                 if (cells.length > 0) {
-                    html += '<tr>';
+                    const rowBg = index % 2 === 0 ? '#FFFFFF' : '#F8FAFC';
+                    html += `<tr style="background: ${rowBg};">`;
                     cells.forEach((cell, index) => {
-                        const cellColor = index === cells.length - 1 ? 
-                            (parseFloat(cell.textContent) >= 0 ? '#28a745' : '#dc3545') : '#333';
-                        html += `<td style="padding: 10px; border: 1px solid #ddd; color: ${cellColor};">${cell.textContent}</td>`;
+                        let cellColor = '#333';
+                        let cellFontSize = '13px';
+                        
+                        if (index === 0) {
+                            cellColor = '#022C43';
+                            cellFontSize = '14px';
+                            cellFontWeight = '600';
+                        } else if (index === cells.length - 1) {
+                            const cellValue = parseFloat(cell.textContent);
+                            cellColor = cellValue >= 0 ? '#28a745' : '#dc3545';
+                            cellFontWeight = '600';
+                        } else if (index === 2 || index === 3 || index === 5) {
+                            cellColor = '#064566';
+                            cellFontWeight = '500';
+                        }
+                        
+                        html += `<td style="padding: 12px 15px; border: 1px solid #E1E8F0; color: ${cellColor}; font-size: ${cellFontSize}; font-weight: ${cellFontWeight || '400'};">${cell.textContent}</td>`;
                     });
                     html += '</tr>';
                 }
@@ -2527,9 +2577,22 @@ async function performAutoUpdate(fund) {
                         </table>
                     </div>
                     
-                    <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #022C43; font-size: 12px; color: #666; text-align: center;">
-                        <p>${lang === 'ar' ? 'تم إنشاء هذا التقرير بواسطة ان - دار استثمار' : 'Generated by InDar Tracker'}</p>
-                        <p>${new Date().toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}</p>
+                    <div style="margin-top: 40px; padding: 25px; background: linear-gradient(135deg, #F8FAFC 0%, #EFF3F6 100%); border-radius: 12px; text-align: center;">
+                        <p style="font-size: 14px; color: #022C43; margin: 10px 0; font-weight: 600;">
+                            ${lang === 'ar' ? 'ملخص الأداء' : 'Performance Summary'}
+                        </p>
+                        <p style="font-size: 12px; color: #666; margin: 5px 0; line-height: 1.6;">
+                            ${lang === 'ar' ? 'يشمل هذا التقرير تحليلاً شاملاً لأداء جميع الصناديق مع مراعاة الرسوم والتكاليف' : 'This report includes comprehensive analysis of all funds performance including fees and costs'}
+                        </p>
+                    </div>
+                    
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #022C43; text-align: center;">
+                        <p style="font-size: 12px; color: #666; margin: 5px 0;">
+                            ${lang === 'ar' ? 'تم إنشاء هذا التقرير بواسطة ان - دار استثمار' : 'Generated by InDar Tracker'}
+                        </p>
+                        <p style="font-size: 11px; color: #999; margin: 5px 0;">
+                            ${new Date().toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
+                        </p>
                     </div>
                 </div>
             `;
@@ -2860,27 +2923,29 @@ async function performAutoUpdate(fund) {
     <meta charset="UTF-8">
     <title>${lang === 'ar' ? 'تقرير الاستثمار' : 'Investment Report'}</title>
     <style>
-        body { font-family: Arial, sans-serif; direction: rtl; }
-        .container { max-width: 800px; margin: 40px auto; }
+        body { font-family: 'Cairo', Arial, sans-serif; direction: rtl; background: #f8f9fa; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .header { text-align: center; border-bottom: 3px solid #022C43; padding-bottom: 20px; margin-bottom: 30px; }
-        .header h1 { color: #022C43; margin: 0; }
-        .header p { color: #064566; margin: 5px 0; }
-        .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-        .metric { background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; }
-        .metric-label { font-size: 12px; color: #666; }
+        .header h1 { color: #022C43; margin: 0; font-size: 28px; }
+        .header h2 { color: #064566; margin: 10px 0; font-size: 20px; }
+        .metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 30px; }
+        .metric { background: linear-gradient(135deg, #F8FAFC 0%, #EFF3F6 100%); padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .metric-label { font-size: 13px; color: #666; margin-bottom: 8px; font-weight: 500; }
         .metric-value { font-size: 24px; font-weight: bold; color: #022C43; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th { background: #022C43; color: white; padding: 12px; text-align: right; }
-        td { padding: 10px; border-bottom: 1px solid #ddd; text-align: right; }
-        .section-title { font-size: 16px; font-weight: bold; color: #022C43; margin-top: 30px; margin-bottom: 10px; }
-        .footer { text-align: center; margin-top: 40px; color: #999; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        th { background: linear-gradient(135deg, #022C43 0%, #053F5E 100%); color: white; padding: 15px; text-align: right; font-weight: 600; border: 1px solid #0A5A85; }
+        td { padding: 12px 15px; border-bottom: 1px solid #E1E8F0; text-align: right; }
+        .section-title { font-size: 18px; font-weight: bold; color: #022C43; margin-top: 30px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #022C43; }
+        .footer { text-align: center; margin-top: 40px; color: #999; font-size: 12px; padding-top: 20px; border-top: 2px solid #022C43; }
+        .positive { color: #28a745 !important; font-weight: 600 !important; }
+        .negative { color: #dc3545 !important; font-weight: 600 !important; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>${lang === 'ar' ? 'تقرير الاستثمار' : 'Investment Report'}</h1>
-            <p>${fund.name} (${fund.code})</p>
+            <h2>${fund.name} (${fund.code})</h2>
         </div>
 
         <div class="metrics">
@@ -2906,11 +2971,11 @@ async function performAutoUpdate(fund) {
             </div>
             <div class="metric">
                 <div class="metric-label">${lang === 'ar' ? 'الربح/الخسارة' : 'Profit/Loss'}</div>
-                <div class="metric-value" style="color: ${m.profitAfterFees >= 0 ? '#28a745' : '#dc3545'};">${formatCurrency(m.profitAfterFees)}</div>
+                <div class="metric-value ${m.profitAfterFees >= 0 ? 'positive' : 'negative'}">${formatCurrency(m.profitAfterFees)}</div>
             </div>
             <div class="metric">
                 <div class="metric-label">${lang === 'ar' ? 'العائد %' : 'Return %'}</div>
-                <div class="metric-value" style="color: ${m.returnPct >= 0 ? '#28a745' : '#dc3545'};">${formatDisplay(m.returnPct)}%</div>
+                <div class="metric-value ${m.returnPct >= 0 ? 'positive' : 'negative'}">${formatDisplay(m.returnPct)}%</div>
             </div>
             <div class="metric">
                 <div class="metric-label">${lang === 'ar' ? 'تاريخ الإنشاء' : 'Export Date'}</div>
@@ -2936,7 +3001,7 @@ async function performAutoUpdate(fund) {
                         <td>${tx.date}</td>
                         <td>${tx.type === 'buy' ? labels[lang].buy : labels[lang].sell}</td>
                         <td>${tx.units}</td>
-                        <td>${formatDisplay(tx.price, true)}</td>
+                        <td style="font-family: 'Courier New', monospace; font-weight: 500;">${formatDisplay(tx.price, true)}</td>
                         <td>${formatCurrency(amount)}</td>
                     </tr>`;
                 }).join('')}
